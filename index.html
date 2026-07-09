@@ -1,13 +1,47 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mascotapp</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  
+  <!-- Título y descripción -->
+  <title>Mascotapp</title>
+  <meta name="description" content="Encuentra, adopta, cuida y protege a tu compañero peludo." />
+  
+  <!-- Color de la barra de estado (Android) -->
+  <meta name="theme-color" content="#FB923C" />
+  
+  <!-- Manifiesto PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  
+  <!-- iOS Web App Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Mascotapp" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  
+  <!-- Icono para iOS (ahora apunta al PNG en la raíz de public/) -->
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  
+  <!-- Icono para el navegador (favicon) -->
+  <link rel="icon" type="image/png" href="/icon-192.png" />
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+  
+  <!-- Registro del Service Worker (obligatorio para PWA) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('✅ Service Worker registrado con éxito:', registration);
+          })
+          .catch(error => {
+            console.log('❌ Error al registrar el Service Worker:', error);
+          });
+      });
+    }
+  </script>
+</body>
 </html>

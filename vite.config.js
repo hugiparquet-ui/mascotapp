@@ -7,33 +7,22 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
-      manifest: {
-        name: 'Mascotapp',
-        short_name: 'Mascotapp',
-        description: 'Encuentra, adopta y cuida mascotas',
-        theme_color: '#FB923C',
-        background_color: '#FFF9F5',
-        display: 'standalone',
-        orientation: 'portrait-primary',
-        icons: [
+      includeAssets: ['icons/*.svg', 'offline.html'],
+      manifest: false, // Ya tenemos nuestro propio manifest.json en public/
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
           {
-            src: 'icon-192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'icon-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-          {
-            src: 'apple-touch-icon.png',
-            sizes: '180x180',
-            type: 'image/png',
-            purpose: 'apple touch icon',
+            urlPattern: /^https:\/\/[a-z0-9]+\.supabase\.co\/rest\/v1\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'supabase-api-cache',
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
+            },
           },
         ],
+        navigateFallback: '/offline.html',
+        navigateFallbackDenylist: [/^\/api\//],
       },
     }),
   ],

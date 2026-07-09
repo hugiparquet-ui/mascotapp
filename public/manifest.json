@@ -1,0 +1,41 @@
+{
+  "name": "Mascotapp - Ecosistema para Mascotas",
+  "short_name": "Mascotapp",
+  "description": "Encuentra, adopta, cuida y protege a tu compañero peludo.",
+  "start_url": "/?utm_source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FFF9F5",
+  "theme_color": "#FB923C",
+  "categories": ["lifestyle", "utilities", "social"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Reportar Perdida",
+      "short_name": "Perdida",
+      "description": "Activar alerta inmediata",
+      "url": "/lost/report",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mi Perfil",
+      "short_name": "Perfil",
+      "url": "/profile",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
