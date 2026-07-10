@@ -7,8 +7,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/*.svg', 'offline.html'],
-      manifest: false, // Ya tenemos nuestro propio manifest.json en public/
+      // Incluye los iconos y el offline.html (si existe)
+      includeAssets: ['icon-192.png', 'icon-512.png', 'offline.html'],
+      // Desactivamos la generación automática de manifest (usamos el nuestro en public/)
+      manifest: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
@@ -17,7 +19,10 @@ export default defineConfig({
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'supabase-api-cache',
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60, // 1 hora
+              },
             },
           },
         ],
