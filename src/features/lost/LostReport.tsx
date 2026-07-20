@@ -22,10 +22,9 @@ export const LostReport = () => {
   const [error, setError] = useState('')
   const [userPhone, setUserPhone] = useState('')
 
-  // ✅ Obtener teléfono desde los metadatos del usuario (sin consulta a profiles)
   useEffect(() => {
     if (user) {
-      const phone = user.user_metadata?.phone || null
+      const phone = user.user_metadata?.phone || ''
       setUserPhone(phone)
     }
   }, [user])

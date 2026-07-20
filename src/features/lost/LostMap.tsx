@@ -65,9 +65,9 @@ export const LostMap = () => {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const mapRef = useRef<any>(null)
-  const centerSetRef = useRef(false)
+  const centerSetRef = useRef(false) // Solo centrar una vez
 
-  // Cargar reportes solo cuando coords cambia
+  // Cargar reportes solo cuando coords cambia significativamente
   useEffect(() => {
     if (!coords) {
       setLoading(false)
