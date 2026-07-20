@@ -33,17 +33,30 @@ export const WalkerList = () => {
   const [showCommentsModal, setShowCommentsModal] = useState(false)
 
   useEffect(() => {
-    if (!coords) return
-    const fetch = async () => {
+    if (!coords) {
+      console.log('⏳ WalkerList: Esperando coordenadas...')
+      setLoading(false)
+      return
+    }
+
+    const fetchWalkers = async () => {
+      console.log('🚀 WalkerList: Consultando paseadores cercanos con radio 50 km...')
       const { data, error } = await supabase.rpc('find_walkers_nearby', {
         user_lat: coords.latitude,
         user_lng: coords.longitude,
         max_distance_meters: 50000,
       })
-      if (!error) setWalkers(data || [])
+
+      if (error) {
+        console.error('❌ WalkerList: Error al cargar paseadores:', error)
+      } else {
+        console.log('✅ WalkerList: Datos recibidos:', data)
+        setWalkers(data || [])
+      }
       setLoading(false)
     }
-    fetch()
+
+    fetchWalkers()
   }, [coords])
 
   const handleRatingSuccess = () => {
@@ -75,12 +88,9 @@ export const WalkerList = () => {
               <div className="flex-1">
                 <h3 className="font-bold">{w.profiles?.full_name || 'Anónimo'}</h3>
                 <p className="text-sm text-gray-600">{w.bio}</p>
-
-                {/* Mostrar calificación promedio */}
                 <div className="mt-2">
                   <RatingDisplay rating={w.rating_avg || 0} count={0} size="sm" />
                 </div>
-
                 <div className="flex flex-wrap gap-2 mt-2 text-xs">
                   <span className="bg-gray-100 px-2 py-1 rounded-full">📅 {w.experience_years} años</span>
                   <span className="bg-green-100 px-2 py-1 rounded-full">💰 ${w.price_per_hour}/hora</span>
@@ -91,7 +101,6 @@ export const WalkerList = () => {
               </div>
             </div>
 
-            {/* Botones de acción */}
             <div className="flex flex-wrap gap-2 mt-3">
               {w.profiles?.phone_public && w.profiles?.phone ? (
                 <a
@@ -108,7 +117,6 @@ export const WalkerList = () => {
                 </button>
               )}
 
-              {/* Botón para valorar */}
               <button
                 onClick={() => {
                   setSelectedWalkerId(w.id)
@@ -119,7 +127,6 @@ export const WalkerList = () => {
                 ⭐ Valorar
               </button>
 
-              {/* Botón para ver comentarios */}
               <button
                 onClick={() => {
                   setSelectedWalkerId(w.id)
@@ -131,7 +138,6 @@ export const WalkerList = () => {
               </button>
             </div>
 
-            {/* Botones de donación */}
             <div className="mt-3">
               <DonationButton />
             </div>
@@ -139,7 +145,6 @@ export const WalkerList = () => {
         ))
       )}
 
-      {/* Modal para valorar */}
       {showRatingForm && selectedWalkerId && (
         <RatingForm
           targetId={selectedWalkerId}
@@ -149,7 +154,6 @@ export const WalkerList = () => {
         />
       )}
 
-      {/* Modal para ver comentarios */}
       {showCommentsModal && selectedWalkerId && (
         <RatingCommentsModal
           targetId={selectedWalkerId}

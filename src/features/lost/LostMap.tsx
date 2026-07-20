@@ -65,11 +65,8 @@ export const LostMap = () => {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const mapRef = useRef<any>(null)
-  const mapCentered = useRef(false) // ✅ Control para centrar solo una vez
 
-  // ============================================
-  // 4.1 Cargar reportes
-  // ============================================
+  // Cargar reportes (solo cuando coords cambia)
   useEffect(() => {
     if (!coords) {
       setLoading(false)
@@ -113,19 +110,9 @@ export const LostMap = () => {
     }
   }, [coords])
 
-  // ============================================
-  // 4.2 Centrar mapa SOLO LA PRIMERA VEZ
-  // ============================================
-  useEffect(() => {
-    if (coords && mapRef.current && !mapCentered.current) {
-      mapRef.current.setView([coords.latitude, coords.longitude], 14)
-      mapCentered.current = true
-    }
-  }, [coords])
+  // ✅ Ya NO centramos el mapa con useEffect, usamos el prop center de MapContainer
 
-  // ============================================
-  // 4.3 Renderizado
-  // ============================================
+  // Renderizado condicional...
   if (error) {
     return (
       <div className="p-4 text-red-500 text-center">
@@ -160,6 +147,7 @@ export const LostMap = () => {
   return (
     <div className="relative w-full h-full">
       <MapContainer
+        key="lost-map" // ✅ Clave fija para evitar re-montaje
         center={[coords.latitude, coords.longitude]}
         zoom={14}
         className="h-full w-full"

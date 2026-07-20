@@ -1,4 +1,3 @@
-console.log('StrayList montado')
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../core/config/supabase.client'
@@ -29,28 +28,29 @@ export const StrayList = () => {
 
   useEffect(() => {
     if (!coords) {
+      console.log('⏳ StrayList: Esperando coordenadas...')
       setLoading(false)
       return
     }
-    const fetch = async () => {
-      try {
-        const { data, error } = await supabase.rpc('find_stray_pets_nearby', {
-          user_lat: coords.latitude,
-          user_lng: coords.longitude,
-          max_distance_meters: 50000,
-        })
-        if (error) {
-          console.error('Error al cargar mascotas callejeras:', error)
-        } else {
-          setPets(data || [])
-        }
-      } catch (err) {
-        console.error('Error en la consulta:', err)
-      } finally {
-        setLoading(false)
+
+    const fetchStrayPets = async () => {
+      console.log('🚀 StrayList: Consultando mascotas callejeras con radio 50 km...')
+      const { data, error } = await supabase.rpc('find_stray_pets_nearby', {
+        user_lat: coords.latitude,
+        user_lng: coords.longitude,
+        max_distance_meters: 50000,
+      })
+
+      if (error) {
+        console.error('❌ StrayList: Error al cargar mascotas callejeras:', error)
+      } else {
+        console.log('✅ StrayList: Datos recibidos:', data)
+        setPets(data || [])
       }
+      setLoading(false)
     }
-    fetch()
+
+    fetchStrayPets()
   }, [coords])
 
   if (loading) return <Loader />
