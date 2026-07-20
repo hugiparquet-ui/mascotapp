@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { useNavigate } from 'react-router-dom'
 import L from 'leaflet'
@@ -65,19 +65,25 @@ export const LostMap = () => {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const mapRef = useRef<any>(null)
-  // ✅ Guardamos el centro una vez para evitar cambios
-  const [mapCenter] = useState<[number, number]>(() => {
-    // Si hay coordenadas, usarlas; si no, coordenadas por defecto (Goya)
-    if (coords) return [coords.latitude, coords.longitude]
-    return [-29.14, -59.27] // Coordenadas aproximadas de Goya
-  })
+  const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null)
 
-  // Cargar reportes (solo cuando coords cambia)
+  // Solo actualizar reports si las coordenadas cambian significativamente (> 0.0001 grados)
   useEffect(() => {
     if (!coords) {
       setLoading(false)
       return
     }
+
+    // Evitar cargar si las coordenadas son prácticamente iguales
+    if (lastCoordsRef.current) {
+      const latDiff = Math.abs(coords.latitude - lastCoordsRef.current.lat)
+      const lngDiff = Math.abs(coords.longitude - lastCoordsRef.current.lng)
+      if (latDiff < 0.0001 && lngDiff < 0.0001) {
+        // No hay cambio significativo, no recargar
+        return
+      }
+    }
+    lastCoordsRef.current = { lat: coords.latitude, lng: coords.longitude }
 
     let isMounted = true
 
@@ -114,9 +120,14 @@ export const LostMap = () => {
     return () => {
       isMounted = false
     }
-  }, [coords])
+  }, [coords]) // Dependencia correcta: solo coords
 
-  // Renderizado condicional...
+  // Usamos useMemo para que el mapa no se re-cree en cada renderizado
+  const mapCenter = useMemo(() => {
+    if (coords) return [coords.latitude, coords.longitude] as [number, number]
+    return [-29.0, -59.0] as [number, number]
+  }, [coords?.latitude, coords?.longitude]) // Solo cambia si lat/lng cambian
+
   if (error) {
     return (
       <div className="p-4 text-red-500 text-center">
@@ -151,8 +162,8 @@ export const LostMap = () => {
   return (
     <div className="relative w-full h-full">
       <MapContainer
-        key="lost-map-fixed" // Clave fija
-        center={mapCenter} // Centro fijo (no cambia)
+        key="lost-map-fixed"
+        center={mapCenter}
         zoom={14}
         className="h-full w-full"
         ref={(map) => {

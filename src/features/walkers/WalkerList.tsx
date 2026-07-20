@@ -31,6 +31,7 @@ export const WalkerList = () => {
   const [selectedWalkerId, setSelectedWalkerId] = useState<string | null>(null)
   const [showRatingForm, setShowRatingForm] = useState(false)
   const [showCommentsModal, setShowCommentsModal] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!coords) {
@@ -41,6 +42,7 @@ export const WalkerList = () => {
 
     const fetchWalkers = async () => {
       console.log('🚀 WalkerList: Consultando paseadores con radio 50 km...')
+      console.log('📍 Coordenadas:', coords.latitude, coords.longitude)
       try {
         const { data, error } = await supabase.rpc('find_walkers_nearby', {
           user_lat: coords.latitude,
@@ -49,14 +51,19 @@ export const WalkerList = () => {
         })
 
         if (error) {
-          console.error('❌ WalkerList: Error:', error)
+          console.error('❌ WalkerList: Error en RPC:', error)
+          setError(error.message)
           setWalkers([])
         } else {
           console.log('✅ WalkerList: Datos recibidos:', data)
           setWalkers(data || [])
+          if (data && data.length > 0) {
+            console.log('📊 Primer paseador:', data[0])
+          }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('❌ WalkerList: Excepción:', err)
+        setError(err.message)
         setWalkers([])
       } finally {
         setLoading(false)
@@ -65,6 +72,11 @@ export const WalkerList = () => {
 
     fetchWalkers()
   }, [coords])
+
+  const handleRatingSuccess = () => {
+    setShowRatingForm(false)
+    window.location.reload()
+  }
 
   if (loading) return <Loader />
 
@@ -78,8 +90,17 @@ export const WalkerList = () => {
         </Link>
       </div>
 
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+          Error: {error}
+        </div>
+      )}
+
       {walkers.length === 0 ? (
-        <p className="text-gray-500 text-center">No hay paseadores cerca.</p>
+        <div className="text-center text-gray-500 mt-10">
+          <p>No hay paseadores cerca.</p>
+          <p className="text-sm text-gray-400">(Radio de búsqueda: 50 km)</p>
+        </div>
       ) : (
         walkers.map((w) => (
           <div key={w.id} className="bg-white rounded-xl shadow-md p-4 mb-4">
@@ -151,10 +172,7 @@ export const WalkerList = () => {
         <RatingForm
           targetId={selectedWalkerId}
           targetType="walker"
-          onSuccess={() => {
-            setShowRatingForm(false)
-            window.location.reload()
-          }}
+          onSuccess={handleRatingSuccess}
           onCancel={() => setShowRatingForm(false)}
         />
       )}

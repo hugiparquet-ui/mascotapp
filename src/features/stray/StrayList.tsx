@@ -25,6 +25,7 @@ export const StrayList = () => {
   const { coords } = useGeolocation()
   const [pets, setPets] = useState<StrayPet[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!coords) {
@@ -35,6 +36,7 @@ export const StrayList = () => {
 
     const fetchStrayPets = async () => {
       console.log('🚀 StrayList: Consultando mascotas callejeras con radio 50 km...')
+      console.log('📍 Coordenadas:', coords.latitude, coords.longitude)
       try {
         const { data, error } = await supabase.rpc('find_stray_pets_nearby', {
           user_lat: coords.latitude,
@@ -43,14 +45,19 @@ export const StrayList = () => {
         })
 
         if (error) {
-          console.error('❌ StrayList: Error:', error)
+          console.error('❌ StrayList: Error en RPC:', error)
+          setError(error.message)
           setPets([])
         } else {
           console.log('✅ StrayList: Datos recibidos:', data)
           setPets(data || [])
+          if (data && data.length > 0) {
+            console.log('📊 Primera mascota callejera:', data[0])
+          }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('❌ StrayList: Excepción:', err)
+        setError(err.message)
         setPets([])
       } finally {
         setLoading(false)
@@ -75,6 +82,12 @@ export const StrayList = () => {
         </Link>
       </div>
 
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+          Error: {error}
+        </div>
+      )}
+
       {!coords && (
         <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg mb-4">
           ⚠️ Activa el GPS para ver mascotas callejeras cercanas.
@@ -82,7 +95,10 @@ export const StrayList = () => {
       )}
 
       {pets.length === 0 ? (
-        <p className="text-gray-500 text-center mt-10">No hay mascotas callejeras reportadas cerca.</p>
+        <div className="text-center text-gray-500 mt-10">
+          <p>No hay mascotas callejeras reportadas cerca.</p>
+          <p className="text-sm text-gray-400">(Radio de búsqueda: 50 km)</p>
+        </div>
       ) : (
         pets.map((p) => (
           <div key={p.id} className="bg-white rounded-xl shadow-md p-4 mb-4">

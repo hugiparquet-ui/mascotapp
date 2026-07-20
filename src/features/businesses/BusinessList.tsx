@@ -25,6 +25,7 @@ export const BusinessList = () => {
   const { coords } = useGeolocation()
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!coords) {
@@ -35,6 +36,7 @@ export const BusinessList = () => {
 
     const fetchBusinesses = async () => {
       console.log('🚀 BusinessList: Consultando negocios con radio 50 km...')
+      console.log('📍 Coordenadas:', coords.latitude, coords.longitude)
       try {
         const { data, error } = await supabase.rpc('find_businesses_nearby', {
           user_lat: coords.latitude,
@@ -43,14 +45,19 @@ export const BusinessList = () => {
         })
 
         if (error) {
-          console.error('❌ BusinessList: Error:', error)
+          console.error('❌ BusinessList: Error en RPC:', error)
+          setError(error.message)
           setBusinesses([])
         } else {
           console.log('✅ BusinessList: Datos recibidos:', data)
           setBusinesses(data || [])
+          if (data && data.length > 0) {
+            console.log('📊 Primer negocio:', data[0])
+          }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('❌ BusinessList: Excepción:', err)
+        setError(err.message)
         setBusinesses([])
       } finally {
         setLoading(false)
@@ -84,8 +91,17 @@ export const BusinessList = () => {
         </Link>
       </div>
 
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+          Error: {error}
+        </div>
+      )}
+
       {businesses.length === 0 ? (
-        <p className="text-gray-500 text-center">No hay locales registrados cerca.</p>
+        <div className="text-center text-gray-500 mt-10">
+          <p>No hay locales registrados cerca.</p>
+          <p className="text-sm text-gray-400">(Radio de búsqueda: 50 km)</p>
+        </div>
       ) : (
         businesses.map((business) => (
           <div key={business.id} className="bg-white rounded-xl shadow-md p-4 mb-4">
