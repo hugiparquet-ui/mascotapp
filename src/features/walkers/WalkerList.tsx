@@ -38,7 +38,7 @@ export const WalkerList = () => {
       const { data, error } = await supabase.rpc('find_walkers_nearby', {
         user_lat: coords.latitude,
         user_lng: coords.longitude,
-        max_distance_meters: 10000,
+        max_distance_meters: 50000,
       })
       if (!error) setWalkers(data || [])
       setLoading(false)

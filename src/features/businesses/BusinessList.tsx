@@ -28,7 +28,7 @@ export const BusinessList = () => {
       const { data, error } = await supabase.rpc('find_businesses_nearby', {
         user_lat: coords.latitude,
         user_lng: coords.longitude,
-        max_distance_meters: 10000,
+        max_distance_meters: 50000,
       })
       if (!error) setBusinesses(data || [])
       setLoading(false)

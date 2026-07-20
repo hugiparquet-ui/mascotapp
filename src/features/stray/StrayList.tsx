@@ -37,7 +37,7 @@ export const StrayList = () => {
         const { data, error } = await supabase.rpc('find_stray_pets_nearby', {
           user_lat: coords.latitude,
           user_lng: coords.longitude,
-          max_distance_meters: 10000,
+          max_distance_meters: 50000,
         })
         if (error) {
           console.error('Error al cargar mascotas callejeras:', error)

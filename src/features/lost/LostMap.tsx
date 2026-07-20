@@ -39,7 +39,7 @@ const lostPetIcon = new L.Icon({
 })
 
 // ============================================
-// 3. INTERFAZ ACTUALIZADA (incluye qr_code_hash)
+// 3. INTERFAZ
 // ============================================
 interface LostReport {
   id: string
@@ -52,7 +52,7 @@ interface LostReport {
   lat: number
   lng: number
   pet_id: string
-  qr_code_hash: string // ✅ NUEVO
+  qr_code_hash: string
 }
 
 // ============================================
@@ -65,7 +65,11 @@ export const LostMap = () => {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const mapRef = useRef<any>(null)
+  const mapCentered = useRef(false) // ✅ Control para centrar solo una vez
 
+  // ============================================
+  // 4.1 Cargar reportes
+  // ============================================
   useEffect(() => {
     if (!coords) {
       setLoading(false)
@@ -109,12 +113,19 @@ export const LostMap = () => {
     }
   }, [coords])
 
+  // ============================================
+  // 4.2 Centrar mapa SOLO LA PRIMERA VEZ
+  // ============================================
   useEffect(() => {
-    if (coords && mapRef.current) {
+    if (coords && mapRef.current && !mapCentered.current) {
       mapRef.current.setView([coords.latitude, coords.longitude], 14)
+      mapCentered.current = true
     }
   }, [coords])
 
+  // ============================================
+  // 4.3 Renderizado
+  // ============================================
   if (error) {
     return (
       <div className="p-4 text-red-500 text-center">
@@ -193,7 +204,6 @@ export const LostMap = () => {
                 <p className="text-xs text-gray-400 mt-1">
                   {new Date(report.created_at).toLocaleString()}
                 </p>
-                {/* ✅ BOTÓN PARA VER EL PERFIL COMPLETO (USA EL HASH) */}
                 <button
                   onClick={() => navigate(`/pet/${report.qr_code_hash}`)}
                   className="mt-2 w-full bg-orange-500 text-white text-sm py-1 rounded-lg font-bold hover:bg-orange-600 transition"
