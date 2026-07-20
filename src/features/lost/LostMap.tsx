@@ -65,12 +65,13 @@ export const LostMap = () => {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const mapRef = useRef<any>(null)
-  const centerSetRef = useRef(false) // Solo centrar una vez
+  const centerSetRef = useRef(false)
+  const reportsLoadedRef = useRef(false) // ✅ Control para cargar reportes solo una vez
 
-  // Cargar reportes solo cuando coords cambia significativamente
+  // Cargar reportes SOLO UNA VEZ (cuando se obtienen las coordenadas por primera vez)
   useEffect(() => {
-    if (!coords) {
-      setLoading(false)
+    if (!coords || reportsLoadedRef.current) {
+      if (!coords) setLoading(false)
       return
     }
 
@@ -90,6 +91,7 @@ export const LostMap = () => {
 
         if (isMounted) {
           setReports(data || [])
+          reportsLoadedRef.current = true // ✅ Marcamos que ya se cargaron
         }
       } catch (err: any) {
         console.error('Error al cargar reportes:', err)
@@ -109,9 +111,9 @@ export const LostMap = () => {
     return () => {
       isMounted = false
     }
-  }, [coords])
+  }, [coords]) // Solo se ejecuta cuando coords cambia, pero el ref evita repeticiones
 
-  // Centrar el mapa UNA SOLA VEZ cuando se obtienen las coordenadas
+  // Centrar el mapa UNA SOLA VEZ
   useEffect(() => {
     if (coords && mapRef.current && !centerSetRef.current) {
       mapRef.current.setView([coords.latitude, coords.longitude], 14)
