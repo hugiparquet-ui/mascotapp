@@ -1,231 +1,114 @@
-import { useEffect, useState, useRef } from 'react'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-import { useGeolocation } from '../../core/hooks/useGeolocation'
 import { supabase } from '../../core/config/supabase.client'
-import { Loader } from '../../shared/ui/Loader'
+import { useAuth } from '../../core/hooks/useAuth'
+import { useGeolocation } from '../../core/hooks/useGeolocation'
+import { uploadImage } from '../../core/services/upload.service'
+import { BackButton } from '../../shared/ui/BackButton'
 
-// ============================================
-// 1. FIX para los iconos de Leaflet
-// ============================================
-delete (L.Icon.Default.prototype as any)._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-})
-
-// ============================================
-// 2. ICONOS PERSONALIZADOS
-// ============================================
-const userIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-})
-
-const lostPetIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-})
-
-// ============================================
-// 3. INTERFAZ
-// ============================================
-interface LostReport {
-  id: string
-  title: string
-  description: string
-  pet_name: string
-  pet_image: string
-  distance_meters: number
-  created_at: string
-  lat: number
-  lng: number
-  pet_id: string
-  qr_code_hash: string
-}
-
-// ============================================
-// 4. COMPONENTE PRINCIPAL
-// ============================================
-export const LostMap = () => {
-  const { coords, error } = useGeolocation()
+export const LostReport = () => {
+  const { user } = useAuth()
   const navigate = useNavigate()
-  const [reports, setReports] = useState<LostReport[]>([])
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
-  const mapRef = useRef<any>(null)
-  const centerSetRef = useRef(false) // Solo centrar una vez
+  const { coords } = useGeolocation()
+  
+  const [petName, setPetName] = useState('')
+  const [description, setDescription] = useState('')
+  const [species, setSpecies] = useState('Perro')
+  const [breed, setBreed] = useState('')
+  const [color, setColor] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [showPhone, setShowPhone] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [userPhone, setUserPhone] = useState('')
 
-  // Cargar reportes solo cuando coords cambia significativamente
+  // ✅ Obtener teléfono desde los metadatos del usuario (sin consulta a profiles)
   useEffect(() => {
-    if (!coords) {
-      setLoading(false)
-      return
+    if (user) {
+      const phone = user.user_metadata?.phone || null
+      setUserPhone(phone)
     }
+  }, [user])
 
-    // Si ya se centró el mapa, no recargar reportes (evita refrescos)
-    if (centerSetRef.current) {
-      return
-    }
+  const generateHash = () => {
+    const timestamp = Date.now().toString(36)
+    const random = Math.random().toString(36).substring(2, 10)
+    return `${timestamp}-${random}`
+  }
 
-    let isMounted = true
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    if (!user) { setError('Debes iniciar sesión'); return }
+    if (!coords) { setError('Activa el GPS'); return }
+    if (!file) { setError('Selecciona una foto'); return }
+    if (!petName.trim()) { setError('El nombre es obligatorio'); return }
 
-    const fetchReports = async () => {
-      setLoading(true)
-      setFetchError(null)
-      try {
-        const { data, error } = await supabase.rpc('find_lost_reports_nearby', {
-          user_lat: coords.latitude,
-          user_lng: coords.longitude,
-          radius_meters: 5000,
+    setLoading(true)
+    try {
+      const imageUrl = await uploadImage(file)
+      const { data: pet, error: petError } = await supabase
+        .from('pets')
+        .insert({
+          owner_id: user.id,
+          name: petName.trim(),
+          species,
+          breed: breed.trim() || null,
+          color: color.trim() || null,
+          image_url: imageUrl,
+          is_active: true,
+          qr_code_hash: generateHash(),
         })
+        .select()
+        .single()
+      if (petError) throw petError
 
-        if (error) throw error
+      const { error: reportError } = await supabase
+        .from('lost_reports')
+        .insert({
+          pet_id: pet.id,
+          user_id: user.id,
+          title: `¡Perdí a ${petName.trim()}!`,
+          description: description.trim() || 'Ayúdame a encontrarlo/a',
+          last_location: `POINT(${coords.longitude} ${coords.latitude})`,
+          radius_km: 1,
+          status: 'activo',
+          phone_public: showPhone,
+        })
+      if (reportError) throw reportError
 
-        if (isMounted) {
-          setReports(data || [])
-        }
-      } catch (err: any) {
-        console.error('Error al cargar reportes:', err)
-        if (isMounted) {
-          setFetchError(err.message || 'Error al cargar los reportes')
-          setReports([])
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
-      }
+      alert('✅ Reporte creado')
+      navigate('/')
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-
-    fetchReports()
-
-    return () => {
-      isMounted = false
-    }
-  }, [coords])
-
-  // Centrar el mapa UNA SOLA VEZ cuando se obtienen las coordenadas
-  useEffect(() => {
-    if (coords && mapRef.current && !centerSetRef.current) {
-      mapRef.current.setView([coords.latitude, coords.longitude], 14)
-      centerSetRef.current = true
-    }
-  }, [coords])
-
-  if (error) {
-    return (
-      <div className="p-4 text-red-500 text-center">
-        ❌ Error de geolocalización: {error.message}
-        <br />
-        <span className="text-sm text-gray-500">
-          Activa el GPS y recarga la página
-        </span>
-      </div>
-    )
-  }
-
-  if (loading) return <Loader />
-
-  if (!coords) {
-    return (
-      <div className="p-4 text-center text-gray-500">
-        Obteniendo tu ubicación...
-        <Loader />
-      </div>
-    )
-  }
-
-  if (fetchError) {
-    return (
-      <div className="p-4 text-red-500 text-center">
-        ❌ Error: {fetchError}
-      </div>
-    )
   }
 
   return (
-    <div className="relative w-full h-full">
-      <MapContainer
-        key="lost-map-fixed"
-        center={[coords.latitude, coords.longitude]}
-        zoom={14}
-        className="h-full w-full"
-        ref={(map) => {
-          if (map) mapRef.current = map
-        }}
-        whenReady={() => console.log('Mapa listo')}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        />
-
-        <Marker position={[coords.latitude, coords.longitude]} icon={userIcon}>
-          <Popup>
-            <strong>📍 Tu ubicación</strong>
-          </Popup>
-        </Marker>
-
-        {reports.map((report) => (
-          <Marker
-            key={report.id}
-            position={[report.lat, report.lng]}
-            icon={lostPetIcon}
-          >
-            <Popup>
-              <div className="min-w-[200px] p-1">
-                {report.pet_image && (
-                  <img
-                    src={report.pet_image}
-                    alt={report.pet_name}
-                    className="w-full h-32 object-cover rounded-lg mb-2"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none'
-                    }}
-                  />
-                )}
-                <h3 className="font-bold text-lg">{report.pet_name}</h3>
-                <p className="text-sm text-gray-600">{report.title}</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  🏃 a {Math.round(report.distance_meters)} metros
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  {new Date(report.created_at).toLocaleString()}
-                </p>
-                <button
-                  onClick={() => navigate(`/pet/${report.qr_code_hash}`)}
-                  className="mt-2 w-full bg-orange-500 text-white text-sm py-1 rounded-lg font-bold hover:bg-orange-600 transition"
-                >
-                  Ver perfil completo
-                </button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-
-      <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-lg text-xs z-10 border border-gray-200">
+    <div className="p-4 max-w-md mx-auto">
+      <BackButton />
+      <h1 className="text-2xl font-bold text-brown-700 mb-4">Reportar pérdida</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input type="text" placeholder="Nombre *" value={petName} onChange={(e) => setPetName(e.target.value)} className="w-full p-3 border rounded-lg" required />
+        <select value={species} onChange={(e) => setSpecies(e.target.value)} className="w-full p-3 border rounded-lg">
+          <option value="Perro">Perro</option>
+          <option value="Gato">Gato</option>
+          <option value="Otro">Otro</option>
+        </select>
+        <input type="text" placeholder="Raza (opcional)" value={breed} onChange={(e) => setBreed(e.target.value)} className="w-full p-3 border rounded-lg" />
+        <input type="text" placeholder="Color (opcional)" value={color} onChange={(e) => setColor(e.target.value)} className="w-full p-3 border rounded-lg" />
+        <textarea placeholder="Descripción / Lugar *" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full p-3 border rounded-lg" rows={3} required />
+        <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="w-full p-2 border rounded-lg" required />
+        {file && <p className="text-sm text-green-600">✅ {file.name}</p>}
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 bg-blue-500 rounded-full inline-block"></span>
-          <span>Tú</span>
+          <input type="checkbox" id="showPhone" checked={showPhone} onChange={(e) => setShowPhone(e.target.checked)} />
+          <label htmlFor="showPhone" className="text-sm">Mostrar mi teléfono {userPhone && `(${userPhone})`}</label>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="w-3 h-3 bg-orange-500 rounded-full inline-block"></span>
-          <span>Mascota perdida</span>
-        </div>
-      </div>
+        {error && <div className="bg-red-100 text-red-700 p-3 rounded-lg">{error}</div>}
+        <button type="submit" disabled={loading} className="w-full bg-orange-500 text-white py-3 rounded-lg font-bold">{loading ? 'Publicando...' : 'Publicar alerta'}</button>
+      </form>
     </div>
   )
 }
