@@ -27,11 +27,13 @@ export const AdoptSwipe = () => {
   const [listings, setListings] = useState<AdoptionListing[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [match, setMatch] = useState<{ match: boolean; matchId?: string } | null>(null)
 
   useEffect(() => {
     const fetchListings = async () => {
       try {
+        // ✅ Consulta directa con JOIN a pet y user (evita 406)
         const { data, error } = await supabase
           .from('adoption_listings')
           .select(`
@@ -44,19 +46,22 @@ export const AdoptSwipe = () => {
           `)
           .eq('is_active', true)
           .order('created_at', { ascending: false })
+          .limit(20)
 
         if (error) throw error
 
         // ✅ Mapeo seguro: asegurar que pet y user sean objetos (no arrays)
-        const formattedData = (data || []).map((item: any) => ({
+        const formatted = (data || []).map((item: any) => ({
           ...item,
           pet: Array.isArray(item.pet) ? item.pet[0] : item.pet,
           user: Array.isArray(item.user) ? item.user[0] : item.user,
         })) as AdoptionListing[]
 
-        setListings(formattedData)
-      } catch (error) {
-        console.error('Error al cargar adopciones:', error)
+        setListings(formatted)
+      } catch (error: any) {
+        console.error('❌ Error al cargar adopciones:', error)
+        setError(error.message)
+        setListings([])
       } finally {
         setLoading(false)
       }
@@ -96,6 +101,12 @@ export const AdoptSwipe = () => {
           + Publicar
         </Link>
       </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4 w-full">
+          Error: {error}
+        </div>
+      )}
 
       {listings.length === 0 ? (
         <div className="text-center">

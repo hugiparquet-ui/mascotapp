@@ -38,11 +38,16 @@ export const StrayList = () => {
       console.log('🚀 StrayList: Consultando mascotas callejeras con radio 50 km...')
       console.log('📍 Coordenadas:', coords.latitude, coords.longitude)
       try {
-        const { data, error } = await supabase.rpc('find_stray_pets_nearby', {
-          user_lat: coords.latitude,
-          user_lng: coords.longitude,
-          max_distance_meters: 50000,
-        })
+        const { data, error } = await supabase
+  .from('stray_reports')
+  .select(`
+    id,
+    description,
+    created_at,
+    pet:pet_id ( id, name, image_url, species, breed, color, qr_code_hash ),
+    profiles ( full_name )
+  `)
+  .limit(20)
 
         if (error) {
           console.error('❌ StrayList: Error en RPC:', error)
@@ -50,7 +55,26 @@ export const StrayList = () => {
           setPets([])
         } else {
           console.log('✅ StrayList: Datos recibidos:', data)
-          setPets(data || [])
+          // Map Supabase response shape to StrayPet[] expected by component
+          const mapped: StrayPet[] = (data || []).map((item: any) => {
+            const pet = Array.isArray(item.pet) ? item.pet[0] : item.pet
+            const profile = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles
+            return {
+              id: item.id,
+              name: pet?.name || 'Sin nombre',
+              species: pet?.species || '',
+              breed: pet?.breed || '',
+              color: pet?.color || '',
+              image_url: pet?.image_url || '',
+              description: item.description || pet?.description || '',
+              created_at: item.created_at,
+              qr_code_hash: pet?.qr_code_hash || pet?.id || '',
+              profiles: {
+                full_name: profile?.full_name || 'Anónimo',
+              },
+            }
+          })
+          setPets(mapped)
           if (data && data.length > 0) {
             console.log('📊 Primera mascota callejera:', data[0])
           }

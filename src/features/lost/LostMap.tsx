@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { useNavigate } from 'react-router-dom'
 import L from 'leaflet'
@@ -65,25 +65,19 @@ export const LostMap = () => {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const mapRef = useRef<any>(null)
-  const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null)
+  const centerSetRef = useRef(false) // Solo centrar una vez
 
-  // Solo actualizar reports si las coordenadas cambian significativamente (> 0.0001 grados)
+  // Cargar reportes solo cuando coords cambia significativamente
   useEffect(() => {
     if (!coords) {
       setLoading(false)
       return
     }
 
-    // Evitar cargar si las coordenadas son prácticamente iguales
-    if (lastCoordsRef.current) {
-      const latDiff = Math.abs(coords.latitude - lastCoordsRef.current.lat)
-      const lngDiff = Math.abs(coords.longitude - lastCoordsRef.current.lng)
-      if (latDiff < 0.0001 && lngDiff < 0.0001) {
-        // No hay cambio significativo, no recargar
-        return
-      }
+    // Si ya se centró el mapa, no recargar reportes (evita refrescos)
+    if (centerSetRef.current) {
+      return
     }
-    lastCoordsRef.current = { lat: coords.latitude, lng: coords.longitude }
 
     let isMounted = true
 
@@ -120,13 +114,15 @@ export const LostMap = () => {
     return () => {
       isMounted = false
     }
-  }, [coords]) // Dependencia correcta: solo coords
+  }, [coords])
 
-  // Usamos useMemo para que el mapa no se re-cree en cada renderizado
-  const mapCenter = useMemo(() => {
-    if (coords) return [coords.latitude, coords.longitude] as [number, number]
-    return [-29.0, -59.0] as [number, number]
-  }, [coords?.latitude, coords?.longitude]) // Solo cambia si lat/lng cambian
+  // Centrar el mapa UNA SOLA VEZ cuando se obtienen las coordenadas
+  useEffect(() => {
+    if (coords && mapRef.current && !centerSetRef.current) {
+      mapRef.current.setView([coords.latitude, coords.longitude], 14)
+      centerSetRef.current = true
+    }
+  }, [coords])
 
   if (error) {
     return (
@@ -163,12 +159,13 @@ export const LostMap = () => {
     <div className="relative w-full h-full">
       <MapContainer
         key="lost-map-fixed"
-        center={mapCenter}
+        center={[coords.latitude, coords.longitude]}
         zoom={14}
         className="h-full w-full"
         ref={(map) => {
           if (map) mapRef.current = map
         }}
+        whenReady={() => console.log('Mapa listo')}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

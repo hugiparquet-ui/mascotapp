@@ -18,7 +18,7 @@ interface Business {
   profiles: {
     full_name: string
     avatar_url: string
-  }
+  }[]
 }
 
 export const BusinessList = () => {
@@ -38,26 +38,33 @@ export const BusinessList = () => {
       console.log('🚀 BusinessList: Consultando negocios con radio 50 km...')
       console.log('📍 Coordenadas:', coords.latitude, coords.longitude)
       try {
-        const { data, error } = await supabase.rpc('find_businesses_nearby', {
-          user_lat: coords.latitude,
-          user_lng: coords.longitude,
-          max_distance_meters: 50000,
-        })
+        const { data, error } = await supabase
+          .from('businesses')
+          .select(`
+            id,
+            name,
+            category,
+            address,
+            phone,
+            hours,
+            services,
+            image_url,
+            profiles ( full_name, avatar_url )
+          `)
+          .eq('is_active', true)
+          .limit(20)
 
         if (error) {
-          console.error('❌ BusinessList: Error en RPC:', error)
+          console.error('❌ BusinessList: Error al consultar:', error)
           setError(error.message)
           setBusinesses([])
         } else {
-          console.log('✅ BusinessList: Datos recibidos:', data)
-          setBusinesses(data || [])
-          if (data && data.length > 0) {
-            console.log('📊 Primer negocio:', data[0])
-          }
+          setBusinesses((data as Business[]) || [])
+          setError(null)
         }
       } catch (err: any) {
         console.error('❌ BusinessList: Excepción:', err)
-        setError(err.message)
+        setError(err?.message ?? 'Error inesperado')
         setBusinesses([])
       } finally {
         setLoading(false)

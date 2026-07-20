@@ -41,25 +41,35 @@ export const WalkerList = () => {
     }
 
     const fetchWalkers = async () => {
-      console.log('🚀 WalkerList: Consultando paseadores con radio 50 km...')
+      console.log('🚀 WalkerList: Consultando paseadores (directo, sin RPC)')
       console.log('📍 Coordenadas:', coords.latitude, coords.longitude)
       try {
-        const { data, error } = await supabase.rpc('find_walkers_nearby', {
-          user_lat: coords.latitude,
-          user_lng: coords.longitude,
-          max_distance_meters: 50000,
-        })
+        // ✅ Consulta directa con JOIN a profiles (evita 406)
+        const { data, error } = await supabase
+          .from('walkers')
+          .select(`
+            id,
+            bio,
+            experience_years,
+            price_per_hour,
+            rating_avg,
+            profiles ( full_name, phone, phone_public )
+          `)
+          .eq('is_active', true)
+          .limit(20)
 
         if (error) {
-          console.error('❌ WalkerList: Error en RPC:', error)
+          console.error('❌ WalkerList: Error en consulta:', error)
           setError(error.message)
           setWalkers([])
         } else {
           console.log('✅ WalkerList: Datos recibidos:', data)
-          setWalkers(data || [])
-          if (data && data.length > 0) {
-            console.log('📊 Primer paseador:', data[0])
-          }
+          // Mapear los datos para que coincidan con la interfaz Walker
+          const formatted = (data || []).map((item: any) => ({
+            ...item,
+            profiles: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles,
+          }))
+          setWalkers(formatted)
         }
       } catch (err: any) {
         console.error('❌ WalkerList: Excepción:', err)
@@ -117,9 +127,6 @@ export const WalkerList = () => {
                 <div className="flex flex-wrap gap-2 mt-2 text-xs">
                   <span className="bg-gray-100 px-2 py-1 rounded-full">📅 {w.experience_years} años</span>
                   <span className="bg-green-100 px-2 py-1 rounded-full">💰 ${w.price_per_hour}/hora</span>
-                  {w.distance_meters !== undefined && (
-                    <span className="bg-blue-100 px-2 py-1 rounded-full">📍 {Math.round(w.distance_meters)} m</span>
-                  )}
                 </div>
               </div>
             </div>
