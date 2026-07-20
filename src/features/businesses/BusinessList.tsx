@@ -35,19 +35,26 @@ export const BusinessList = () => {
 
     const fetchBusinesses = async () => {
       console.log('🚀 BusinessList: Consultando negocios con radio 50 km...')
-      const { data, error } = await supabase.rpc('find_businesses_nearby', {
-        user_lat: coords.latitude,
-        user_lng: coords.longitude,
-        max_distance_meters: 50000,
-      })
+      try {
+        const { data, error } = await supabase.rpc('find_businesses_nearby', {
+          user_lat: coords.latitude,
+          user_lng: coords.longitude,
+          max_distance_meters: 50000,
+        })
 
-      if (error) {
-        console.error('❌ BusinessList: Error al cargar negocios:', error)
-      } else {
-        console.log('✅ BusinessList: Datos recibidos:', data)
-        setBusinesses(data || [])
+        if (error) {
+          console.error('❌ BusinessList: Error:', error)
+          setBusinesses([])
+        } else {
+          console.log('✅ BusinessList: Datos recibidos:', data)
+          setBusinesses(data || [])
+        }
+      } catch (err) {
+        console.error('❌ BusinessList: Excepción:', err)
+        setBusinesses([])
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     fetchBusinesses()

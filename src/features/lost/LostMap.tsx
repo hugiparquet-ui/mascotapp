@@ -65,6 +65,12 @@ export const LostMap = () => {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const mapRef = useRef<any>(null)
+  // ✅ Guardamos el centro una vez para evitar cambios
+  const [mapCenter] = useState<[number, number]>(() => {
+    // Si hay coordenadas, usarlas; si no, coordenadas por defecto (Goya)
+    if (coords) return [coords.latitude, coords.longitude]
+    return [-29.14, -59.27] // Coordenadas aproximadas de Goya
+  })
 
   // Cargar reportes (solo cuando coords cambia)
   useEffect(() => {
@@ -110,8 +116,6 @@ export const LostMap = () => {
     }
   }, [coords])
 
-  // ✅ Ya NO centramos el mapa con useEffect, usamos el prop center de MapContainer
-
   // Renderizado condicional...
   if (error) {
     return (
@@ -147,8 +151,8 @@ export const LostMap = () => {
   return (
     <div className="relative w-full h-full">
       <MapContainer
-        key="lost-map" // ✅ Clave fija para evitar re-montaje
-        center={[coords.latitude, coords.longitude]}
+        key="lost-map-fixed" // Clave fija
+        center={mapCenter} // Centro fijo (no cambia)
         zoom={14}
         className="h-full w-full"
         ref={(map) => {

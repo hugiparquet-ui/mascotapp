@@ -40,29 +40,31 @@ export const WalkerList = () => {
     }
 
     const fetchWalkers = async () => {
-      console.log('🚀 WalkerList: Consultando paseadores cercanos con radio 50 km...')
-      const { data, error } = await supabase.rpc('find_walkers_nearby', {
-        user_lat: coords.latitude,
-        user_lng: coords.longitude,
-        max_distance_meters: 50000,
-      })
+      console.log('🚀 WalkerList: Consultando paseadores con radio 50 km...')
+      try {
+        const { data, error } = await supabase.rpc('find_walkers_nearby', {
+          user_lat: coords.latitude,
+          user_lng: coords.longitude,
+          max_distance_meters: 50000,
+        })
 
-      if (error) {
-        console.error('❌ WalkerList: Error al cargar paseadores:', error)
-      } else {
-        console.log('✅ WalkerList: Datos recibidos:', data)
-        setWalkers(data || [])
+        if (error) {
+          console.error('❌ WalkerList: Error:', error)
+          setWalkers([])
+        } else {
+          console.log('✅ WalkerList: Datos recibidos:', data)
+          setWalkers(data || [])
+        }
+      } catch (err) {
+        console.error('❌ WalkerList: Excepción:', err)
+        setWalkers([])
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     fetchWalkers()
   }, [coords])
-
-  const handleRatingSuccess = () => {
-    setShowRatingForm(false)
-    window.location.reload()
-  }
 
   if (loading) return <Loader />
 
@@ -149,7 +151,10 @@ export const WalkerList = () => {
         <RatingForm
           targetId={selectedWalkerId}
           targetType="walker"
-          onSuccess={handleRatingSuccess}
+          onSuccess={() => {
+            setShowRatingForm(false)
+            window.location.reload()
+          }}
           onCancel={() => setShowRatingForm(false)}
         />
       )}

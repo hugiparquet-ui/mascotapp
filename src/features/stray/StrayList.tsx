@@ -35,19 +35,26 @@ export const StrayList = () => {
 
     const fetchStrayPets = async () => {
       console.log('🚀 StrayList: Consultando mascotas callejeras con radio 50 km...')
-      const { data, error } = await supabase.rpc('find_stray_pets_nearby', {
-        user_lat: coords.latitude,
-        user_lng: coords.longitude,
-        max_distance_meters: 50000,
-      })
+      try {
+        const { data, error } = await supabase.rpc('find_stray_pets_nearby', {
+          user_lat: coords.latitude,
+          user_lng: coords.longitude,
+          max_distance_meters: 50000,
+        })
 
-      if (error) {
-        console.error('❌ StrayList: Error al cargar mascotas callejeras:', error)
-      } else {
-        console.log('✅ StrayList: Datos recibidos:', data)
-        setPets(data || [])
+        if (error) {
+          console.error('❌ StrayList: Error:', error)
+          setPets([])
+        } else {
+          console.log('✅ StrayList: Datos recibidos:', data)
+          setPets(data || [])
+        }
+      } catch (err) {
+        console.error('❌ StrayList: Excepción:', err)
+        setPets([])
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     fetchStrayPets()
