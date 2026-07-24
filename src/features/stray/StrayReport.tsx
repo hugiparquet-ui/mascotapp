@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../core/config/supabase.client'
 import { useAuth } from '../../core/hooks/useAuth'
@@ -20,7 +20,7 @@ export const StrayReport = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const [success, setSuccess] = useState(false) // ✅ Restaurado
   const [duplicateFound, setDuplicateFound] = useState(false)
   const [existingPet, setExistingPet] = useState<any>(null)
 
@@ -123,8 +123,9 @@ export const StrayReport = () => {
 
       if (reportError) throw reportError
 
-      alert('✅ Comunitario Agregado. ¡Gracias por ayudar!')
-      navigate('/my-pets') // ✅ Cambiado de /stray a /my-pets
+      // ✅ Mostrar éxito y redirigir
+      setSuccess(true)
+      setTimeout(() => navigate('/my-pets'), 2000)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -132,6 +133,7 @@ export const StrayReport = () => {
     }
   }
 
+  // ✅ Pantalla de éxito
   if (success) {
     return (
       <div className="p-4 text-center">
@@ -145,7 +147,7 @@ export const StrayReport = () => {
     return (
       <div className="p-4 max-w-md mx-auto">
         <button
-          onClick={() => navigate('/my-pets')} // ✅ Cambiado de /stray a /my-pets
+          onClick={() => navigate('/my-pets')}
           className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-naranja-brillante hover:bg-naranja-brillante hover:text-white transition-all duration-200 border border-naranja-suave/30 hover:border-naranja-brillante"
           aria-label="Volver a Mis Mascotas"
         >
@@ -178,7 +180,7 @@ export const StrayReport = () => {
         <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-12">
           {/* ✅ Botón de retroceso dentro del cuadro (va a /my-pets) */}
           <button
-            onClick={() => navigate('/my-pets')} // ✅ Cambiado de /stray a /my-pets
+            onClick={() => navigate('/my-pets')}
             className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-naranja-brillante hover:bg-naranja-brillante hover:text-white transition-all duration-200 border border-naranja-suave/30 hover:border-naranja-brillante"
             aria-label="Volver a Mis Mascotas"
           >

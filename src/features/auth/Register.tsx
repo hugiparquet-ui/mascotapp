@@ -16,7 +16,7 @@ export const Register = () => {
     setLoading(true)
     setError('')
     
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {

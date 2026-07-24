@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { supabase } from '../../core/config/supabase.client'
 import { useAuth } from '../../core/hooks/useAuth'
 import { Loader } from '../../shared/ui/Loader'
@@ -19,7 +19,6 @@ interface Pet {
 
 export const MyPets = () => {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [myPets, setMyPets] = useState<Pet[]>([])
   const [strayPets, setStrayPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)

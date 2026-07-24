@@ -18,7 +18,7 @@ export const SwipeCard = ({ pet, onSwipe }: SwipeCardProps) => {
   const rotate = useTransform(x, [-200, 200], [-30, 30])
   const opacity = useTransform(x, [-200, -50, 0, 50, 200], [0, 1, 1, 1, 0])
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent, info: PanInfo) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent, info: PanInfo) => {
     const threshold = 100
     if (info.offset.x > threshold) {
       onSwipe('right')
