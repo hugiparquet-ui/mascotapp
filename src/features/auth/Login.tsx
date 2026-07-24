@@ -61,13 +61,13 @@ export const Login = () => {
   disabled={loading}
   className="w-full bg-azul-turquesa text-white py-3 rounded-lg font-bold hover:bg-azul-fuerte transition disabled:opacity-50"
 >
-  {loading ? 'Ingresando...' : 'Iniciar sesión'}
+  {loading ? 'Ingresando...' : 'Iniciar Sesión'}
 </button>
         </form>
         <p className="text-center mt-4 text-sm text-gray-600">
-          ¿No tienes cuenta?{' '}
+          ¿No tenés cuenta?{' '}
           <a href="/register" className="text-naranja-brillante font-semibold hover:underline">
-            Regístrate
+            Registrate
           </a>
         </p>
       </div>
