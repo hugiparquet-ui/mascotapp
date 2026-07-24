@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../core/config/supabase.client'
 
 export const Register = () => {
@@ -17,7 +17,6 @@ export const Register = () => {
     // Si la página se cargó desde caché, forzar recarga
     const perfEntries = performance.getEntriesByType('navigation')
     if (perfEntries.length > 0 && (perfEntries[0] as any).type === 'back_forward') {
-      // Si viene del historial, forzar recarga limpia
       window.location.reload()
     }
   }, [])
@@ -106,9 +105,9 @@ export const Register = () => {
         </form>
         <p className="text-center mt-4 text-sm text-gray-600">
           ¿Ya tenés cuenta?{' '}
-          <a href="/login" className="text-naranja-brillante font-semibold hover:underline">
+          <Link to="/login" className="text-naranja-brillante font-semibold hover:underline">
             Inicia Sesión
-          </a>
+          </Link>
         </p>
       </div>
     </div>
