@@ -63,11 +63,10 @@ function App() {
             <Route path="/stray" element={user ? <StrayList /> : <Navigate to="/login" />} />
             <Route path="/stray/report" element={user ? <StrayReport /> : <Navigate to="/login" />} />
             <Route path="/my-pets" element={user ? <MyPets /> : <Navigate to="/login" />} />
-<Route path="/my-pets/add-pet" element={user ? <AddPet /> : <Navigate to="/login" />} />
-<Route path="/my-pets/add-stray" element={user ? <StrayReport /> : <Navigate to="/login" />} />
+            <Route path="/my-pets/add-pet" element={user ? <AddPet /> : <Navigate to="/login" />} />
+            <Route path="/my-pets/add-stray" element={user ? <StrayReport /> : <Navigate to="/login" />} />
           </Routes>
         </div>
-        
       </div>
     </BrowserRouter>
   )
