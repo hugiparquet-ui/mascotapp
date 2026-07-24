@@ -11,9 +11,23 @@ export const Register = () => {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  // ✅ Limpiar error al montar el componente (evita que persista al volver atrás)
+  // ✅ Limpiar error al montar el componente
   useEffect(() => {
     setError('')
+  }, [])
+
+  // ✅ Forzar recarga de la página cuando se navega hacia atrás (bfcache)
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      // Si la página se está mostrando desde el caché (bfcache), recargamos forzadamente
+      if (event.persisted) {
+        window.location.reload()
+      }
+    }
+    window.addEventListener('pageshow', handlePageShow)
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow)
+    }
   }, [])
 
   const handleRegister = async (e: React.FormEvent) => {
