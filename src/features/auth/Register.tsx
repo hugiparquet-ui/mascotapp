@@ -12,10 +12,11 @@ export const Register = () => {
   const navigate = useNavigate()
 
   const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    
+  e.preventDefault()
+  setLoading(true)
+  setError('')
+  
+  try {
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -28,20 +29,26 @@ export const Register = () => {
     })
     
     if (error) {
-      setError(error.message)
+      console.error('Error de Supabase:', error)
+      setError(error.message || 'Error al registrarse')
       setLoading(false)
     } else {
       navigate('/login')
       alert('Registro exitoso. Ya puedes iniciar sesión.')
     }
+  } catch (err: any) {
+    console.error('Error inesperado:', err)
+    setError(err.message || 'Error de conexión')
+    setLoading(false)
   }
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream-50 p-4">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
         <h1 className="text-3xl font-bold text-center mb-6">
           <span className="bg-gradient-to-r from-naranja-brillante to-azul-fuerte bg-clip-text text-transparent inline-block">
-            Mascotapp
+            MascotApp
           </span>
         </h1>
         <form onSubmit={handleRegister} className="space-y-4">
@@ -86,9 +93,9 @@ export const Register = () => {
           </button>
         </form>
         <p className="text-center mt-4 text-sm text-gray-600">
-          ¿Ya tienes cuenta?{' '}
+          ¿Ya tenés cuenta?{' '}
           <a href="/login" className="text-naranja-brillante font-semibold hover:underline">
-            Inicia sesión
+            Inicia Sesión
           </a>
         </p>
       </div>
