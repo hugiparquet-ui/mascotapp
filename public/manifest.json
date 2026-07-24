@@ -2,7 +2,7 @@
   "name": "Mascotapp - Ecosistema para Mascotas",
   "short_name": "Mascotapp",
   "description": "Encuentra, adopta, cuida y protege a tu compañero peludo.",
-  "start_url": "/?utm_source=pwa",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -11,13 +11,13 @@
   "categories": ["lifestyle", "utilities", "social"],
   "icons": [
     {
-      "src": "/manifest-icon-192.maskable.png",
+      "src": "https://mascotapp-gamma.vercel.app/manifest-icon-192.maskable.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/manifest-icon-512.maskable.png",
+      "src": "https://mascotapp-gamma.vercel.app/manifest-icon-512.maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -29,13 +29,13 @@
       "short_name": "Perdida",
       "description": "Activar alerta inmediata",
       "url": "/lost/report",
-      "icons": [{ "src": "/manifest-icon-192.maskable.png", "sizes": "192x192" }]
+      "icons": [{ "src": "https://mascotapp-gamma.vercel.app/manifest-icon-192.maskable.png", "sizes": "192x192" }]
     },
     {
       "name": "Mi Perfil",
       "short_name": "Perfil",
       "url": "/profile",
-      "icons": [{ "src": "/manifest-icon-192.maskable.png", "sizes": "192x192" }]
+      "icons": [{ "src": "https://mascotapp-gamma.vercel.app/manifest-icon-192.maskable.png", "sizes": "192x192" }]
     }
   ]
 }
