@@ -30,11 +30,11 @@ export const Register = () => {
     
     if (error) {
       console.error('Error de Supabase:', error)
-      setError(error.message || 'Error al registrarse')
+      setError(error.message || 'Error al Registrarse')
       setLoading(false)
     } else {
       navigate('/login')
-      alert('Registro exitoso. Ya puedes iniciar sesión.')
+      alert('Registro Exitoso. Ya podés Iniciar Sesión.')
     }
   } catch (err: any) {
     console.error('Error inesperado:', err)
@@ -54,7 +54,7 @@ export const Register = () => {
         <form onSubmit={handleRegister} className="space-y-4">
           <input
             type="text"
-            placeholder="Nombre completo"
+            placeholder="Nombre Completo"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul-fuerte text-black"
