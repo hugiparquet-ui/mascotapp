@@ -4,6 +4,7 @@ import { supabase } from '../../core/config/supabase.client'
 import { useAuth } from '../../core/hooks/useAuth'
 import { useGeolocation } from '../../core/hooks/useGeolocation'
 import { uploadImage } from '../../core/services/upload.service'
+import { ConfirmModal } from '../../shared/ui/ConfirmModal' // ✅ NUEVO
 
 export const BusinessRegister = () => {
   const { user } = useAuth()
@@ -23,6 +24,7 @@ export const BusinessRegister = () => {
   const [existingBusiness, setExistingBusiness] = useState<any>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false) // ✅ NUEVO
 
   // ✅ Solo cargar existente si NO hay parámetro "new" en la URL
   useEffect(() => {
@@ -59,6 +61,23 @@ export const BusinessRegister = () => {
 
   const handleImageClick = () => {
     fileInputRef.current?.click()
+  }
+
+  // ✅ NUEVO: Eliminar negocio
+  const handleDeleteBusiness = async () => {
+    try {
+      const { error } = await supabase
+        .from('businesses')
+        .delete()
+        .eq('id', existingBusiness.id)
+
+      if (error) throw error
+
+      alert('✅ Perfil de negocio eliminado correctamente.')
+      navigate('/businesses')
+    } catch (err: any) {
+      alert('Error al eliminar el perfil: ' + err.message)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -313,9 +332,34 @@ export const BusinessRegister = () => {
             >
               {loading ? 'Guardando...' : existingBusiness ? 'Actualizar' : 'Registrar'}
             </button>
+
+            {/* ✅ NUEVO: Botón Eliminar Perfil (solo si existe) */}
+            {existingBusiness && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="w-full bg-red-500 text-white py-3 rounded-lg font-bold hover:bg-red-600 transition shadow-md"
+              >
+                Eliminar Perfil
+              </button>
+            )}
           </form>
         </div>
       </div>
+
+      {/* ✅ NUEVO: Modal de confirmación para eliminar */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Eliminar Perfil"
+        message="¿Estás seguro de que deseas eliminar tu perfil? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={() => {
+          setShowDeleteModal(false)
+          handleDeleteBusiness()
+        }}
+        onCancel={() => setShowDeleteModal(false)}
+      />
     </div>
   )
 }

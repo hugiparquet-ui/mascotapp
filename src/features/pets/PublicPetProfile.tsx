@@ -18,6 +18,7 @@ export const PublicPetProfile = () => {
   const [showNotifyModal, setShowNotifyModal] = useState(false)
   const [showClinicalForm, setShowClinicalForm] = useState(false)
   const [activeReport, setActiveReport] = useState<any>(null)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null) // ✅ Nuevo estado
 
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean
@@ -140,11 +141,31 @@ export const PublicPetProfile = () => {
     }
   }
 
+  // ✅ Marcar como encontrado
+  const handleMarkAsFound = async () => {
+    if (!activeReport) return
+    if (!window.confirm('¿Ya encontraste a tu mascota? Esto marcará el reporte como resuelto.')) return
+
+    try {
+      const { error } = await supabase
+        .from('lost_reports')
+        .update({ status: 'resuelto' })
+        .eq('id', activeReport.id)
+
+      if (error) throw error
+
+      alert('✅ ¡Mascota encontrada! El reporte ha sido cerrado.')
+      window.location.reload()
+    } catch (err: any) {
+      alert('Error al marcar como encontrado: ' + err.message)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center">
       <div className="w-full max-w-md">
         <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-12">
-          {/* ✅ Botón de retroceso DENTRO del cuadro, esquina superior izquierda */}
+          {/* Botón de retroceso */}
           <button
             onClick={handleBack}
             className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-naranja-brillante hover:bg-naranja-brillante hover:text-white transition-all duration-200 border border-naranja-suave/30 hover:border-naranja-brillante"
@@ -155,8 +176,11 @@ export const PublicPetProfile = () => {
             </svg>
           </button>
 
-          {/* Foto y estado */}
-          <div className="relative h-48 bg-gray-200 rounded-xl overflow-hidden border-2 border-azul-turquesa mt-2">
+          {/* Foto y estado (clickeable) */}
+          <div
+            className="relative h-48 bg-gray-200 rounded-xl overflow-hidden border-2 border-azul-turquesa mt-2 cursor-pointer"
+            onClick={() => pet.image_url && setSelectedImage(pet.image_url)}
+          >
             <img
               src={pet.image_url || '/default-pet.png'}
               alt={pet.name}
@@ -178,8 +202,9 @@ export const PublicPetProfile = () => {
             </p>
             {pet.color && <p className="text-center text-gray-500 text-sm">Color: {pet.color}</p>}
 
+            {/* Recuadro de "Esta mascota está perdida" con botón "Ya lo encontré" */}
             {isLost && (
-              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 relative">
                 <p className="text-red-700 font-semibold">¡Esta mascota está perdida!</p>
                 {activeReport?.description && (
                   <p className="text-sm text-gray-700 mt-1">{activeReport.description}</p>
@@ -188,6 +213,15 @@ export const PublicPetProfile = () => {
                   <p className="text-xs text-gray-500 mt-1">
                     Reportado el {new Date(activeReport.created_at).toLocaleDateString()}
                   </p>
+                )}
+
+                {isOwner && (
+                  <button
+                    onClick={handleMarkAsFound}
+                    className="absolute top-2 right-2 bg-verde-esmeralda text-white text-xs font-bold px-3 py-1 rounded-full hover:bg-green-600 transition shadow-sm"
+                  >
+                    ✅ Ya Lo Encontré
+                  </button>
                 )}
               </div>
             )}
@@ -347,6 +381,31 @@ export const PublicPetProfile = () => {
         }}
         onCancel={() => setConfirmModal({ isOpen: false, type: 'record' })}
       />
+
+      {/* ============================================
+          MODAL PARA VER LA IMAGEN COMPLETA
+          ============================================ */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <img
+              src={selectedImage}
+              alt="Vista completa"
+              className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl border-2 border-azul-turquesa"
+            />
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-3 -right-3 bg-white rounded-full w-8 h-8 flex items-center justify-center text-gray-800 hover:bg-gray-100 transition shadow-lg text-xl"
+              aria-label="Cerrar imagen"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

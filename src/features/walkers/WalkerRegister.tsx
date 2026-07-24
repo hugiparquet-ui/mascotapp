@@ -4,6 +4,7 @@ import { supabase } from '../../core/config/supabase.client'
 import { useAuth } from '../../core/hooks/useAuth'
 import { useGeolocation } from '../../core/hooks/useGeolocation'
 import { uploadImage } from '../../core/services/upload.service'
+import { ConfirmModal } from '../../shared/ui/ConfirmModal' // ✅ NUEVO: importado
 
 export const WalkerRegister = () => {
   const { user } = useAuth()
@@ -12,9 +13,9 @@ export const WalkerRegister = () => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [bio, setBio] = useState('')
-  const [experienceYears, setExperienceYears] = useState<number | ''>('') // ✅ Vacío por defecto
+  const [experienceYears, setExperienceYears] = useState<number | ''>('')
   const [pricePerHour, setPricePerHour] = useState('')
-  const [phone, setPhone] = useState('') // ✅ NUEVO: teléfono de contacto
+  const [phone, setPhone] = useState('')
   const [phonePublic, setPhonePublic] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -22,11 +23,11 @@ export const WalkerRegister = () => {
   const [existingWalker, setExistingWalker] = useState<any>(null)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false) // ✅ NUEVO: estado para modal de eliminación
 
-  // ✅ Cargar datos existentes (incluyendo teléfono del perfil)
+  // Cargar datos existentes (incluyendo teléfono del perfil)
   useEffect(() => {
     if (user) {
-      // Cargar teléfono desde el perfil del usuario
       supabase
         .from('profiles')
         .select('phone')
@@ -36,7 +37,6 @@ export const WalkerRegister = () => {
           if (data?.phone) setPhone(data.phone)
         })
 
-      // Cargar datos del paseador si ya existe
       supabase
         .from('walkers')
         .select('*')
@@ -96,7 +96,6 @@ export const WalkerRegister = () => {
     setLoading(true)
 
     try {
-      // ✅ 1. Actualizar el teléfono en el perfil del usuario
       if (phone.trim()) {
         const { error: phoneError } = await supabase
           .from('profiles')
@@ -105,7 +104,6 @@ export const WalkerRegister = () => {
         if (phoneError) throw phoneError
       }
 
-      // ✅ 2. Subir avatar (si hay)
       let avatarUrl = null
       if (avatarFile) {
         try {
@@ -118,7 +116,6 @@ export const WalkerRegister = () => {
         }
       }
 
-      // ✅ 3. Guardar datos del paseador
       const walkerData = {
         user_id: user.id,
         bio: bio.trim(),
@@ -150,6 +147,23 @@ export const WalkerRegister = () => {
       setError(err.message || 'Error al guardar los datos')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // ✅ NUEVO: Eliminar perfil de paseador
+  const handleDeleteWalker = async () => {
+    try {
+      const { error } = await supabase
+        .from('walkers')
+        .delete()
+        .eq('id', existingWalker.id)
+
+      if (error) throw error
+
+      alert('✅ Perfil de paseador eliminado correctamente.')
+      navigate('/walkers')
+    } catch (err: any) {
+      alert('Error al eliminar el perfil: ' + err.message)
     }
   }
 
@@ -252,7 +266,7 @@ export const WalkerRegister = () => {
               />
             </div>
 
-            {/* ✅ NUEVO CAMPO: TELÉFONO DE CONTACTO */}
+            {/* TELÉFONO DE CONTACTO */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Teléfono de Contacto
@@ -269,7 +283,7 @@ export const WalkerRegister = () => {
               </p>
             </div>
 
-            {/* AÑOS DE EXPERIENCIA (sin spinners) */}
+            {/* AÑOS DE EXPERIENCIA */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Años de Experiencia
@@ -334,9 +348,34 @@ export const WalkerRegister = () => {
             >
               {loading ? 'Guardando...' : existingWalker ? 'Actualizar' : 'Registrarme'}
             </button>
+
+            {/* ✅ NUEVO: BOTÓN ELIMINAR PERFIL (solo si existe) */}
+            {existingWalker && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="w-full bg-red-500 text-white py-3 rounded-lg font-bold hover:bg-red-600 transition shadow-md"
+              >
+                Eliminar Perfil
+              </button>
+            )}
           </form>
         </div>
       </div>
+
+      {/* ✅ NUEVO: MODAL DE CONFIRMACIÓN PARA ELIMINAR */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Eliminar Perfil"
+        message="¿Estás seguro de que deseas eliminar tu perfil? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={() => {
+          setShowDeleteModal(false)
+          handleDeleteWalker()
+        }}
+        onCancel={() => setShowDeleteModal(false)}
+      />
     </div>
   )
 }

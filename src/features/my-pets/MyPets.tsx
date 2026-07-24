@@ -24,6 +24,7 @@ export const MyPets = () => {
   const [strayPets, setStrayPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null) // ✅ Estado para el modal de imagen
 
   useEffect(() => {
     if (!user) {
@@ -69,7 +70,7 @@ export const MyPets = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center">
       <div className="w-full max-w-md">
         <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-12">
-          {/* ✅ Botón de retroceso DENTRO del cuadro */}
+          {/* Botón de retroceso dentro del cuadro */}
           <div className="absolute top-2 left-2">
             <BackButton />
           </div>
@@ -103,7 +104,11 @@ export const MyPets = () => {
               <div className="space-y-2">
                 {myPets.map((pet) => (
                   <div key={pet.id} className="bg-white/80 rounded-lg p-3 flex items-center gap-3 border border-azul-turquesa/30">
-                    <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                    {/* ✅ Imagen clickeable */}
+                    <div
+                      className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 cursor-pointer border-2 border-transparent hover:border-azul-turquesa transition"
+                      onClick={() => pet.image_url && setSelectedImage(pet.image_url)}
+                    >
                       {pet.image_url ? (
                         <img src={pet.image_url} alt={pet.name} className="w-full h-full object-cover" />
                       ) : (
@@ -134,7 +139,11 @@ export const MyPets = () => {
               <div className="space-y-2">
                 {strayPets.map((pet) => (
                   <div key={pet.id} className="bg-white/80 rounded-lg p-3 flex items-center gap-3 border border-naranja-suave/30">
-                    <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                    {/* ✅ Imagen clickeable */}
+                    <div
+                      className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 cursor-pointer border-2 border-transparent hover:border-naranja-brillante transition"
+                      onClick={() => pet.image_url && setSelectedImage(pet.image_url)}
+                    >
                       {pet.image_url ? (
                         <img src={pet.image_url} alt={pet.name} className="w-full h-full object-cover" />
                       ) : (
@@ -158,6 +167,31 @@ export const MyPets = () => {
           </div>
         </div>
       </div>
+
+      {/* ============================================
+          MODAL PARA VER LA IMAGEN COMPLETA
+          ============================================ */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <img
+              src={selectedImage}
+              alt="Vista completa"
+              className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl border-2 border-azul-turquesa"
+            />
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-3 -right-3 bg-white rounded-full w-8 h-8 flex items-center justify-center text-gray-800 hover:bg-gray-100 transition shadow-lg text-xl"
+              aria-label="Cerrar imagen"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
