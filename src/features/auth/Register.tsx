@@ -11,9 +11,14 @@ export const Register = () => {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  // ✅ Limpiar error al montar el componente (evita que persista al volver atrás)
+  // ✅ Limpiar estado al montar y al desmontar (solución definitiva)
   useEffect(() => {
     setError('')
+    setLoading(false)
+    return () => {
+      setError('')
+      setLoading(false)
+    }
   }, [])
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -35,11 +40,11 @@ export const Register = () => {
       
       if (error) {
         console.error('Error de Supabase:', error)
-        setError(error.message || 'Error al Registrarse')
+        setError(error.message || 'Error al registrarse')
         setLoading(false)
       } else {
         navigate('/login')
-        alert('Registro Exitoso. Ya podés Iniciar Sesión.')
+        alert('Registro exitoso. Ya puedes iniciar sesión.')
       }
     } catch (err: any) {
       console.error('Error inesperado:', err)
@@ -59,7 +64,7 @@ export const Register = () => {
         <form onSubmit={handleRegister} className="space-y-4">
           <input
             type="text"
-            placeholder="Nombre Completo"
+            placeholder="Nombre completo"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul-fuerte text-black"
@@ -98,9 +103,9 @@ export const Register = () => {
           </button>
         </form>
         <p className="text-center mt-4 text-sm text-gray-600">
-          ¿Ya tenés cuenta?{' '}
+          ¿Ya tienes cuenta?{' '}
           <a href="/login" className="text-naranja-brillante font-semibold hover:underline">
-            Inicia Sesión
+            Inicia sesión
           </a>
         </p>
       </div>
