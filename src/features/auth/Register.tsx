@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../core/config/supabase.client'
 
@@ -11,37 +11,47 @@ export const Register = () => {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
+  // ✅ Limpiar error al montar el componente (evita que persista al volver atrás)
+  useEffect(() => {
+    setError('')
+  }, [])
+
   const handleRegister = async (e: React.FormEvent) => {
-  e.preventDefault()
-  setLoading(true)
-  setError('')
-  
-  try {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          phone: phone
-        }
-      }
-    })
+    e.preventDefault()
+    setLoading(true)
+    setError('')
     
-    if (error) {
-      console.error('Error de Supabase:', error)
-      setError(error.message || 'Error al Registrarse')
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone: phone
+          }
+        }
+      })
+      
+      if (error) {
+        console.error('Error de Supabase:', error)
+        setError(error.message || 'Error al Registrarse')
+        setLoading(false)
+      } else {
+        navigate('/login')
+        alert('Registro Exitoso. Ya podés Iniciar Sesión.')
+      }
+    } catch (err: any) {
+      console.error('Error inesperado:', err)
+      // Si es un error de red, mostrar mensaje amigable
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+        setError('Error de conexión. Verifica tu internet e intenta nuevamente.')
+      } else {
+        setError(err.message || 'Error al registrarse')
+      }
       setLoading(false)
-    } else {
-      navigate('/login')
-      alert('Registro Exitoso. Ya podés Iniciar Sesión.')
     }
-  } catch (err: any) {
-    console.error('Error inesperado:', err)
-    setError(err.message || 'Error de conexión')
-    setLoading(false)
   }
-}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream-50 p-4">
