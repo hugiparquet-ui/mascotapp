@@ -13,6 +13,13 @@ if ('serviceWorker' in navigator) {
   })
 }
 
+// Registrar Service Worker manualmente
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(reg => console.log('✅ SW registrado:', reg))
+    .catch(err => console.error('❌ Error al registrar SW:', err));
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />

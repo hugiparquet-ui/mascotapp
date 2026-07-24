@@ -24,7 +24,6 @@ export const RatingCommentsModal = ({ targetId, targetType, onClose }: RatingCom
 
       if (!error) {
         setComments(data || [])
-        // Calcular promedio localmente
         if (data && data.length > 0) {
           const sum = data.reduce((acc, curr) => acc + curr.rating, 0)
           setAvgRating(sum / data.length)
@@ -37,26 +36,35 @@ export const RatingCommentsModal = ({ targetId, targetType, onClose }: RatingCom
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 max-h-[80vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Valoraciones</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+      {/* ✅ Contenedor con altura máxima y scroll interno */}
+      <div className="bg-white rounded-2xl max-w-md w-full max-h-[80vh] flex flex-col shadow-2xl border-2 border-azul-turquesa">
+        {/* ✅ Header fijo (sticky) con el botón de cerrar */}
+        <div className="sticky top-0 bg-white rounded-t-2xl z-10 p-4 border-b border-gray-200 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-800">Valoraciones</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-2xl"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
         </div>
 
-        {avgRating > 0 && (
-          <div className="mb-4">
-            <RatingDisplay rating={avgRating} count={comments.length} size="lg" />
-          </div>
-        )}
+        {/* ✅ Contenido con scroll interno */}
+        <div className="overflow-y-auto p-4 space-y-4 flex-1">
+          {avgRating > 0 && (
+            <div className="mb-2">
+              <RatingDisplay rating={avgRating} count={comments.length} size="lg" />
+            </div>
+          )}
 
-        {loading ? (
-          <p className="text-gray-500">Cargando comentarios...</p>
-        ) : comments.length === 0 ? (
-          <p className="text-gray-400">No hay valoraciones aún.</p>
-        ) : (
-          <div className="space-y-3">
-            {comments.map((c) => (
-              <div key={c.id} className="border-b border-gray-100 pb-3">
+          {loading ? (
+            <p className="text-gray-500">Cargando comentarios...</p>
+          ) : comments.length === 0 ? (
+            <p className="text-gray-400">No hay valoraciones aún.</p>
+          ) : (
+            comments.map((c) => (
+              <div key={c.id} className="border-b border-gray-100 pb-3 last:border-0">
                 <div className="flex justify-between items-start">
                   <div>
                     <span className="font-semibold">{c.profiles?.full_name || 'Anónimo'}</span>
@@ -71,9 +79,9 @@ export const RatingCommentsModal = ({ targetId, targetType, onClose }: RatingCom
                 </div>
                 {c.comment && <p className="text-sm text-gray-600 mt-1">{c.comment}</p>}
               </div>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
       </div>
     </div>
   )

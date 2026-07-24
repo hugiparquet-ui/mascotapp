@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css'
 import { useGeolocation } from '../../core/hooks/useGeolocation'
 import { supabase } from '../../core/config/supabase.client'
 import { Loader } from '../../shared/ui/Loader'
+import { BackButton } from '../../shared/ui/BackButton'
 
 // ============================================
 // 1. FIX para los iconos de Leaflet
@@ -66,9 +67,9 @@ export const LostMap = () => {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const mapRef = useRef<any>(null)
   const centerSetRef = useRef(false)
-  const reportsLoadedRef = useRef(false) // ✅ Control para cargar reportes solo una vez
+  const reportsLoadedRef = useRef(false)
 
-  // Cargar reportes SOLO UNA VEZ (cuando se obtienen las coordenadas por primera vez)
+  // Cargar reportes SOLO UNA VEZ
   useEffect(() => {
     if (!coords || reportsLoadedRef.current) {
       if (!coords) setLoading(false)
@@ -91,7 +92,7 @@ export const LostMap = () => {
 
         if (isMounted) {
           setReports(data || [])
-          reportsLoadedRef.current = true // ✅ Marcamos que ya se cargaron
+          reportsLoadedRef.current = true
         }
       } catch (err: any) {
         console.error('Error al cargar reportes:', err)
@@ -111,7 +112,7 @@ export const LostMap = () => {
     return () => {
       isMounted = false
     }
-  }, [coords]) // Solo se ejecuta cuando coords cambia, pero el ref evita repeticiones
+  }, [coords])
 
   // Centrar el mapa UNA SOLA VEZ
   useEffect(() => {
@@ -154,6 +155,11 @@ export const LostMap = () => {
 
   return (
     <div className="relative w-full h-full">
+      {/* ✅ Botón de retroceso reposicionado (más abajo y a la derecha) */}
+      <div className="absolute top-24 left-1/2 transform -translate-x-1/2 z-[1000]">
+        <BackButton />
+      </div>
+
       <MapContainer
         key="lost-map-fixed"
         center={[coords.latitude, coords.longitude]}
@@ -182,28 +188,33 @@ export const LostMap = () => {
             icon={lostPetIcon}
           >
             <Popup>
-              <div className="min-w-[200px] p-1">
+              {/* ✅ Estilo mejorado del popup */}
+              <div className="min-w-[220px] max-w-[260px] p-2">
                 {report.pet_image && (
                   <img
                     src={report.pet_image}
                     alt={report.pet_name}
-                    className="w-full h-32 object-cover rounded-lg mb-2"
+                    className="w-full h-36 object-cover rounded-lg mb-2 border-2 border-azul-turquesa"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none'
                     }}
                   />
                 )}
-                <h3 className="font-bold text-lg">{report.pet_name}</h3>
-                <p className="text-sm text-gray-600">{report.title}</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  🏃 a {Math.round(report.distance_meters)} metros
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  {new Date(report.created_at).toLocaleString()}
-                </p>
+                <h3 className="font-bold text-lg text-naranja-brillante">
+                  {report.pet_name}
+                </h3>
+                <p className="text-sm text-gray-700 font-medium">{report.title}</p>
+                <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                  <span className="bg-gray-100 px-2 py-0.5 rounded-full">
+                    🏃 {Math.round(report.distance_meters)} m
+                  </span>
+                  <span className="bg-gray-100 px-2 py-0.5 rounded-full">
+                    📅 {new Date(report.created_at).toLocaleDateString()}
+                  </span>
+                </div>
                 <button
                   onClick={() => navigate(`/pet/${report.qr_code_hash}`)}
-                  className="mt-2 w-full bg-orange-500 text-white text-sm py-1 rounded-lg font-bold hover:bg-orange-600 transition"
+                  className="mt-3 w-full bg-naranja-brillante text-white text-sm py-1.5 rounded-lg font-bold hover:bg-naranja-suave transition shadow-sm"
                 >
                   Ver perfil completo
                 </button>

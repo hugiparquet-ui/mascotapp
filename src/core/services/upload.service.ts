@@ -3,15 +3,19 @@ export const uploadImage = async (file: File): Promise<string> => {
   formData.append('file', file)
   formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
 
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-    { method: 'POST', body: formData }
-  )
-  
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
+
+  const res = await fetch(url, {
+    method: 'POST',
+    body: formData,
+  })
+
   if (!res.ok) {
-    throw new Error('Error al subir la imagen')
+    const errorText = await res.text()
+    throw new Error(`Cloudinary error (${res.status}): ${errorText}`)
   }
-  
+
   const data = await res.json()
   return data.secure_url
 }

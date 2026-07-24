@@ -16,7 +16,7 @@ export const Register = () => {
     setLoading(true)
     setError('')
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -39,21 +39,25 @@ export const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream-50 p-4">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-brown-700 mb-6">Crear cuenta</h1>
+        <h1 className="text-3xl font-bold text-center mb-6">
+          <span className="bg-gradient-to-r from-naranja-brillante to-azul-fuerte bg-clip-text text-transparent inline-block">
+            Mascotapp
+          </span>
+        </h1>
         <form onSubmit={handleRegister} className="space-y-4">
           <input
             type="text"
             placeholder="Nombre completo"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul-fuerte text-black"
           />
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul-fuerte text-black"
             required
           />
           <input
@@ -61,29 +65,29 @@ export const Register = () => {
             placeholder="Teléfono (opcional)"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul-fuerte text-black"
           />
           <input
             type="password"
             placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul-fuerte text-black"
             required
             minLength={6}
           />
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-danger text-sm">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-orange-500 text-white py-3 rounded-lg font-bold hover:bg-orange-600 transition disabled:opacity-50"
+            className="w-full bg-azul-turquesa text-white py-3 rounded-lg font-bold hover:bg-azul-fuerte transition disabled:opacity-50"
           >
             {loading ? 'Registrando...' : 'Registrarse'}
           </button>
         </form>
         <p className="text-center mt-4 text-sm text-gray-600">
           ¿Ya tienes cuenta?{' '}
-          <a href="/login" className="text-orange-500 font-semibold hover:underline">
+          <a href="/login" className="text-naranja-brillante font-semibold hover:underline">
             Inicia sesión
           </a>
         </p>

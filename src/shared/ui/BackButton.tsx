@@ -4,11 +4,24 @@ export const BackButton = () => {
   const navigate = useNavigate()
   return (
     <button
-      onClick={() => navigate(-1)}
-      className="flex items-center gap-1 text-gray-600 hover:text-orange-500 transition mb-2"
+      onClick={() => navigate('/')} // ✅ Siempre a Home
+      className="mb-4 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-naranja-brillante hover:bg-naranja-brillante hover:text-white transition-all duration-200 border border-naranja-suave/30 hover:border-naranja-brillante"
+      aria-label="Volver al inicio"
     >
-      <span className="text-xl">←</span>
-      <span className="text-sm">Volver</span>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2.5}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M15 19l-7-7 7-7"
+        />
+      </svg>
     </button>
   )
 }
