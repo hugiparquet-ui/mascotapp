@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../../core/config/supabase.client'
 
 export const Register = () => {
@@ -10,14 +10,22 @@ export const Register = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const location = useLocation()
 
-  // ✅ Limpiar estado al montar y al desmontar (solución definitiva)
+  // ✅ Limpiar error al montar el componente
   useEffect(() => {
     setError('')
-    setLoading(false)
-    return () => {
-      setError('')
-      setLoading(false)
+  }, [])
+
+  // ✅ Si la página se carga desde el caché del historial, forzar recarga suave
+  useEffect(() => {
+    const perfEntries = performance.getEntriesByType('navigation')
+    if (perfEntries.length > 0) {
+      const navEntry = perfEntries[0] as PerformanceNavigationTiming
+      if (navEntry.type === 'back_forward') {
+        // Recargar solo una vez para obtener la versión fresca
+        window.location.replace(window.location.href)
+      }
     }
   }, [])
 
@@ -40,11 +48,11 @@ export const Register = () => {
       
       if (error) {
         console.error('Error de Supabase:', error)
-        setError(error.message || 'Error al registrarse')
+        setError(error.message || 'Error al Registrarse')
         setLoading(false)
       } else {
         navigate('/login')
-        alert('Registro exitoso. Ya puedes iniciar sesión.')
+        alert('Registro Exitoso. Ya podés Iniciar Sesión.')
       }
     } catch (err: any) {
       console.error('Error inesperado:', err)
@@ -64,7 +72,7 @@ export const Register = () => {
         <form onSubmit={handleRegister} className="space-y-4">
           <input
             type="text"
-            placeholder="Nombre completo"
+            placeholder="Nombre Completo"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul-fuerte text-black"
@@ -90,10 +98,11 @@ export const Register = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul-fuerte text-black"
+            autoComplete="new-password"
             required
             minLength={6}
           />
-          {error && <p className="text-danger text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"
             disabled={loading}
@@ -103,9 +112,9 @@ export const Register = () => {
           </button>
         </form>
         <p className="text-center mt-4 text-sm text-gray-600">
-          ¿Ya tienes cuenta?{' '}
+          ¿Ya tenés cuenta?{' '}
           <a href="/login" className="text-naranja-brillante font-semibold hover:underline">
-            Inicia sesión
+            Inicia Sesión
           </a>
         </p>
       </div>

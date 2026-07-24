@@ -4,7 +4,7 @@
   ],
   "headers": [
     {
-      "source": "/login",
+      "source": "/register",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "Pragma", "value": "no-cache" },
@@ -12,7 +12,7 @@
       ]
     },
     {
-      "source": "/register",
+      "source": "/login",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "Pragma", "value": "no-cache" },
