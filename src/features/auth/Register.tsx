@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../core/config/supabase.client'
 
 export const Register = () => {
@@ -10,22 +10,15 @@ export const Register = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
-  const location = useLocation()
 
-  // ✅ Limpiar error al montar el componente
+  // ✅ FORZAR LIMPIEZA DE ERROR AL MONTAR EL COMPONENTE
   useEffect(() => {
     setError('')
-  }, [])
-
-  // ✅ Si la página se carga desde el caché del historial, forzar recarga suave
-  useEffect(() => {
+    // Si la página se cargó desde caché, forzar recarga
     const perfEntries = performance.getEntriesByType('navigation')
-    if (perfEntries.length > 0) {
-      const navEntry = perfEntries[0] as PerformanceNavigationTiming
-      if (navEntry.type === 'back_forward') {
-        // Recargar solo una vez para obtener la versión fresca
-        window.location.replace(window.location.href)
-      }
+    if (perfEntries.length > 0 && (perfEntries[0] as any).type === 'back_forward') {
+      // Si viene del historial, forzar recarga limpia
+      window.location.reload()
     }
   }, [])
 
