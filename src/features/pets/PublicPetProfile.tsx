@@ -18,7 +18,6 @@ export const PublicPetProfile = () => {
   const [showNotifyModal, setShowNotifyModal] = useState(false)
   const [showClinicalForm, setShowClinicalForm] = useState(false)
   const [activeReport, setActiveReport] = useState<any>(null)
-  const [selectedImage, setSelectedImage] = useState<string | null>(null) // ✅ Nuevo estado
 
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean
@@ -35,6 +34,7 @@ export const PublicPetProfile = () => {
       }
 
       try {
+        console.log('🔍 Buscando mascota con hash:', hash)
         const { data, error } = await supabase
           .from('pets')
           .select(`
@@ -69,19 +69,25 @@ export const PublicPetProfile = () => {
           .eq('qr_code_hash', hash)
           .maybeSingle()
 
-        if (error) throw error
+        if (error) {
+          console.error('❌ Error de Supabase:', error)
+          throw error
+        }
+
         if (!data) {
+          console.warn('⚠️ No se encontró mascota con hash:', hash)
           setError('Mascota no encontrada')
           setLoading(false)
           return
         }
 
+        console.log('✅ Mascota encontrada:', data)
         const report = data.lost_reports?.find((r: any) => r.status === 'activo')
         setActiveReport(report || null)
         setPet(data)
       } catch (err: any) {
-        console.error(err)
-        setError(err.message)
+        console.error('❌ Error inesperado:', err)
+        setError(err.message || 'Error al cargar los datos')
       } finally {
         setLoading(false)
       }
@@ -141,7 +147,6 @@ export const PublicPetProfile = () => {
     }
   }
 
-  // ✅ Marcar como encontrado
   const handleMarkAsFound = async () => {
     if (!activeReport) return
     if (!window.confirm('¿Ya encontraste a tu mascota? Esto marcará el reporte como resuelto.')) return
@@ -151,9 +156,7 @@ export const PublicPetProfile = () => {
         .from('lost_reports')
         .update({ status: 'resuelto' })
         .eq('id', activeReport.id)
-
       if (error) throw error
-
       alert('✅ ¡Mascota encontrada! El reporte ha sido cerrado.')
       window.location.reload()
     } catch (err: any) {
@@ -162,10 +165,9 @@ export const PublicPetProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center pt-20">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center">
       <div className="w-full max-w-md">
         <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-20">
-          {/* Botón de retroceso */}
           <button
             onClick={handleBack}
             className="absolute top-4 left-4 w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-naranja-brillante hover:bg-naranja-brillante hover:text-white transition-all duration-200 border border-naranja-suave/30 hover:border-naranja-brillante"
@@ -176,11 +178,8 @@ export const PublicPetProfile = () => {
             </svg>
           </button>
 
-          {/* Foto y estado (clickeable) */}
-          <div
-            className="relative h-48 bg-gray-200 rounded-xl overflow-hidden border-2 border-azul-turquesa mt-2 cursor-pointer"
-            onClick={() => pet.image_url && setSelectedImage(pet.image_url)}
-          >
+          {/* Foto y estado */}
+          <div className="relative h-48 bg-gray-200 rounded-xl overflow-hidden border-2 border-azul-turquesa mt-2">
             <img
               src={pet.image_url || '/default-pet.png'}
               alt={pet.name}
@@ -194,18 +193,13 @@ export const PublicPetProfile = () => {
           </div>
 
           <div className="mt-4">
-            <h1 className="text-2xl font-bold text-center text-gray-800">
-              {pet.name}
-            </h1>
-            <p className="text-center text-gray-600">
-              {pet.species} {pet.breed && `· ${pet.breed}`}
-            </p>
+            <h1 className="text-2xl font-bold text-center text-gray-800">{pet.name}</h1>
+            <p className="text-center text-gray-600">{pet.species} {pet.breed && `· ${pet.breed}`}</p>
             {pet.color && <p className="text-center text-gray-500 text-sm">Color: {pet.color}</p>}
 
-            {/* Recuadro de "Esta mascota está perdida" con botón "Ya lo encontré" */}
             {isLost && (
               <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 relative">
-                <p className="text-red-700 font-semibold">¡Esta Mascota está Perdida!</p>
+                <p className="text-red-700 font-semibold">¡Esta mascota está perdida!</p>
                 {activeReport?.description && (
                   <p className="text-sm text-gray-700 mt-1">{activeReport.description}</p>
                 )}
@@ -214,7 +208,6 @@ export const PublicPetProfile = () => {
                     Reportado el {new Date(activeReport.created_at).toLocaleDateString()}
                   </p>
                 )}
-
                 {isOwner && (
                   <button
                     onClick={handleMarkAsFound}
@@ -243,7 +236,6 @@ export const PublicPetProfile = () => {
               </button>
             )}
 
-            {/* Historial Clínico */}
             <div className="mt-6">
               <div className="flex justify-between items-center flex-wrap gap-2">
                 <h2 className="text-lg font-bold text-gray-800">Historial Clínico</h2>
@@ -302,18 +294,8 @@ export const PublicPetProfile = () => {
                           className="absolute bottom-2 right-2 text-gray-400 hover:text-red-500 transition"
                           title="Eliminar Registro"
                         >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                            />
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                           </svg>
                         </button>
                       )}
@@ -323,11 +305,14 @@ export const PublicPetProfile = () => {
               )}
             </div>
 
-            {/* QR */}
+            {/* QR con parámetro anti-caché */}
             <div className="mt-6 text-center">
               <p className="text-xs text-gray-400 mb-2">Escaneá el QR para ver los datos</p>
               <div className="inline-block bg-white p-2 rounded-lg shadow">
-                <QRCodeSVG value={window.location.href} size={128} />
+                <QRCodeSVG 
+                  value={`https://mascotapp-gamma.vercel.app/pet/${hash}?t=${Date.now()}`} 
+                  size={128} 
+                />
               </div>
             </div>
 
@@ -340,7 +325,6 @@ export const PublicPetProfile = () => {
         </div>
       </div>
 
-      {/* Modales */}
       {showNotifyModal && (
         <NotifyOwnerModal
           petId={pet.id}
@@ -381,31 +365,6 @@ export const PublicPetProfile = () => {
         }}
         onCancel={() => setConfirmModal({ isOpen: false, type: 'record' })}
       />
-
-      {/* ============================================
-          MODAL PARA VER LA IMAGEN COMPLETA
-          ============================================ */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-[90vw] max-h-[90vh]">
-            <img
-              src={selectedImage}
-              alt="Vista completa"
-              className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl border-2 border-azul-turquesa"
-            />
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute -top-3 -right-3 bg-white rounded-full w-8 h-8 flex items-center justify-center text-gray-800 hover:bg-gray-100 transition shadow-lg text-xl"
-              aria-label="Cerrar imagen"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
