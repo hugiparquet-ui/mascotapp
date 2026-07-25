@@ -90,16 +90,16 @@ export const AdoptSwipe = () => {
   if (loading) return <Loader />
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center pt-16">
       <div className="w-full max-w-md">
-        <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-12">
+        <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-20">
           {/* ✅ Botón de retroceso dentro del cuadro */}
           <button
             onClick={() => navigate('/')}
-            className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-naranja-brillante hover:bg-naranja-brillante hover:text-white transition-all duration-200 border border-naranja-suave/30 hover:border-naranja-brillante"
+            className="absolute top-4 left-4 w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-naranja-brillante hover:bg-naranja-brillante hover:text-white transition-all duration-200 border border-naranja-suave/30 hover:border-naranja-brillante"
             aria-label="Volver al inicio"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -126,13 +126,13 @@ export const AdoptSwipe = () => {
 
           {listings.length === 0 ? (
             <div className="text-center text-gray-500 mt-10">
-              <p>Todavia no hay mascotas en adopción.</p>
+              <p>Todavia no hay Mascotas en Adopción.</p>
               <p className="text-sm text-gray-400 mt-1">¡Sé el primero en publicar una!</p>
             </div>
           ) : currentIndex >= listings.length ? (
             <div className="text-center text-gray-500 mt-10">
-              <p>¡Ya viste todas!</p>
-              <p className="text-sm text-gray-400 mt-1">Volvé más tarde para ver nuevas mascotas.</p>
+              <p>¡Ya viste Todas!</p>
+              <p className="text-sm text-gray-400 mt-1">Volvé más tarde para ver nuevas Mascotas.</p>
             </div>
           ) : (
             <div className="flex flex-col items-center">

@@ -104,16 +104,16 @@ export const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center pt-20">
       <div className="w-full max-w-md">
-        <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-12">
+        <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-20">
           {/* Botón de retroceso */}
           <button
             onClick={() => navigate('/')}
-            className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-naranja-brillante hover:bg-naranja-brillante hover:text-white transition-all duration-200 border border-naranja-suave/30 hover:border-naranja-brillante"
+            className="absolute top-4 left-4 w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-naranja-brillante hover:bg-naranja-brillante hover:text-white transition-all duration-200 border border-naranja-suave/30 hover:border-naranja-brillante"
             aria-label="Volver al inicio"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -194,7 +194,7 @@ export const ProfilePage = () => {
             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             <p className="text-gray-700 text-xs text-center font-medium">
               {isSubscribed
-                ? 'Recibirás Alertas.'
+                ? 'Vas a Recibir Alertas.'
                 : 'Activá las Notificaciones Para Recibir Alertas.'}
             </p>
           </div>
@@ -286,7 +286,7 @@ export const ProfilePage = () => {
               </button>
             </div>
             <p className="text-sm text-gray-500 mb-4">
-              Actualiza tu nombre y teléfono de contacto.
+              Actualiza tu Nombre y Teléfono de Contacto.
             </p>
             <form
               onSubmit={(e) => {
@@ -297,7 +297,7 @@ export const ProfilePage = () => {
             >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre completo
+                  Nombre Completo
                 </label>
                 <input
                   type="text"

@@ -128,7 +128,7 @@ export const LostMap = () => {
         ❌ Error de geolocalización: {error.message}
         <br />
         <span className="text-sm text-gray-500">
-          Activa el GPS y recarga la página
+          Activá el GPS y recargá la Página
         </span>
       </div>
     )
@@ -139,7 +139,7 @@ export const LostMap = () => {
   if (!coords) {
     return (
       <div className="p-4 text-center text-gray-500">
-        Obteniendo tu ubicación...
+        Obteniendo tu Ubicación...
         <Loader />
       </div>
     )
@@ -216,7 +216,7 @@ export const LostMap = () => {
                   onClick={() => navigate(`/pet/${report.qr_code_hash}`)}
                   className="mt-3 w-full bg-naranja-brillante text-white text-sm py-1.5 rounded-lg font-bold hover:bg-naranja-suave transition shadow-sm"
                 >
-                  Ver perfil completo
+                  Ver Perfil Completo
                 </button>
               </div>
             </Popup>
@@ -231,7 +231,7 @@ export const LostMap = () => {
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 bg-orange-500 rounded-full inline-block"></span>
-          <span>Mascota perdida</span>
+          <span>Mascota Perdida</span>
         </div>
       </div>
     </div>

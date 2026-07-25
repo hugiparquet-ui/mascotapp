@@ -75,7 +75,7 @@ export const LostReport = () => {
         })
       if (reportError) throw reportError
 
-      alert('✅ Reporte creado')
+      alert('✅ Reporte Creado')
       navigate('/')
     } catch (err: any) {
       setError(err.message)
@@ -85,16 +85,16 @@ export const LostReport = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center pt-16">
       <div className="w-full max-w-md">
-        <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-12">
+        <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-20">
           {/* ✅ Botón de retroceso dentro del cuadro */}
           <button
             onClick={() => navigate('/')}
-            className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-naranja-brillante hover:bg-naranja-brillante hover:text-white transition-all duration-200 border border-naranja-suave/30 hover:border-naranja-brillante"
-            aria-label="Volver al inicio"
+            className="absolute top-4 left-4 w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-naranja-brillante hover:bg-naranja-brillante hover:text-white transition-all duration-200 border border-naranja-suave/30 hover:border-naranja-brillante"
+            aria-label="Volver al Inicio"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -147,7 +147,7 @@ export const LostReport = () => {
             />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Foto de la mascota *
+                Foto de la Mascota *
               </label>
               <div
                 onClick={() => document.getElementById('fileInput')?.click()}
@@ -169,7 +169,7 @@ export const LostReport = () => {
                 )}
                 {file && (
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                    <span className="text-white text-xs font-medium">Cambiar foto</span>
+                    <span className="text-white text-xs font-medium">Cambiar Foto</span>
                   </div>
                 )}
                 <input
@@ -191,7 +191,7 @@ export const LostReport = () => {
                 className="w-4 h-4 text-azul-fuerte focus:ring-azul-fuerte"
               />
               <label htmlFor="showPhone" className="text-sm text-gray-700">
-                Mostrar mi teléfono {userPhone && `(${userPhone})`}
+                Mostrar mi Teléfono {userPhone && `(${userPhone})`}
               </label>
             </div>
             {error && <div className="bg-danger/10 border border-danger text-danger p-3 rounded-lg text-sm">{error}</div>}

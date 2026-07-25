@@ -39,7 +39,7 @@ export const HomePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center justify-center pt-16">
       <div className="w-full max-w-md">
         <h1 className="text-4xl font-bold text-center mb-10 pt-4">
           <span className="bg-gradient-to-r from-naranja-brillante to-azul-fuerte bg-clip-text text-transparent inline-block">

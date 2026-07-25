@@ -66,11 +66,11 @@ export const MyPets = () => {
   if (error) return <div className="p-4 text-red-500 text-center">{error}</div>
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center pt-16">
       <div className="w-full max-w-md">
-        <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-12">
+        <div className="bg-gray-100/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-2 border-azul-turquesa relative pt-20">
           {/* Botón de retroceso dentro del cuadro */}
-          <div className="absolute top-2 left-2">
+          <div className="absolute top-4 left-4">
             <BackButton />
           </div>
 
@@ -85,7 +85,7 @@ export const MyPets = () => {
               to="/my-pets/add-pet"
               className="flex-1 bg-azul-turquesa text-white py-2 rounded-lg font-bold text-center hover:bg-azul-fuerte transition shadow-md"
             >
-              Agregar Mascota
+              Agregar     Mascota
             </Link>
             <Link
               to="/my-pets/add-stray"
@@ -133,7 +133,7 @@ export const MyPets = () => {
           <div>
             <h2 className="text-lg font-bold text-gray-700 mb-2">Comunitarios Agregados</h2>
             {strayPets.length === 0 ? (
-              <p className="text-sm text-gray-400">Todavia no se agregaron comunitarios.</p>
+              <p className="text-sm text-gray-400">Todavia no se Agregaron Comunitarios.</p>
             ) : (
               <div className="space-y-2">
                 {strayPets.map((pet) => (
@@ -178,13 +178,13 @@ export const MyPets = () => {
           <div className="relative max-w-[90vw] max-h-[90vh]">
             <img
               src={selectedImage}
-              alt="Vista completa"
+              alt="Vista Completa"
               className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl border-2 border-azul-turquesa"
             />
             <button
               onClick={() => setSelectedImage(null)}
               className="absolute -top-3 -right-3 bg-white rounded-full w-8 h-8 flex items-center justify-center text-gray-800 hover:bg-gray-100 transition shadow-lg text-xl"
-              aria-label="Cerrar imagen"
+              aria-label="Cerrar Imagen"
             >
               ×
             </button>
