@@ -18,6 +18,7 @@ export const PublicPetProfile = () => {
   const [showNotifyModal, setShowNotifyModal] = useState(false)
   const [showClinicalForm, setShowClinicalForm] = useState(false)
   const [activeReport, setActiveReport] = useState<any>(null)
+  const [retryCount, setRetryCount] = useState(0)
 
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean
@@ -25,79 +26,116 @@ export const PublicPetProfile = () => {
     recordId?: string
   }>({ isOpen: false, type: 'record' })
 
-  useEffect(() => {
-    const fetchPet = async () => {
-      if (!hash) {
-        setError('Código inválido')
+  const fetchPet = async () => {
+    if (!hash) {
+      setError('Código QR inválido')
+      setLoading(false)
+      return
+    }
+
+    try {
+      console.log(`🔍 [Intento ${retryCount + 1}] Buscando mascota con hash:`, hash)
+      const { data, error } = await supabase
+        .from('pets')
+        .select(`
+          *,
+          profiles (
+            full_name,
+            phone,
+            phone_public
+          ),
+          lost_reports (
+            id,
+            status,
+            description,
+            created_at,
+            phone_public
+          ),
+          stray_reports (
+            reporter_id
+          ),
+          clinical_records (
+            id,
+            record_type,
+            title,
+            description,
+            veterinarian_name,
+            clinic_name,
+            record_date,
+            next_due_date,
+            created_at
+          )
+        `)
+        .eq('qr_code_hash', hash)
+        .maybeSingle()
+
+      if (error) {
+        console.error('❌ Error de Supabase:', error)
+        // Si es error de conexión, reintentar
+        if (error.code === 'PGRST301' || error.message?.includes('fetch')) {
+          if (retryCount < 2) {
+            setRetryCount(prev => prev + 1)
+            setTimeout(() => fetchPet(), 1000)
+            return
+          }
+        }
+        setError(`Error al cargar los datos: ${error.message}`)
         setLoading(false)
         return
       }
 
-      try {
-        console.log('🔍 Buscando mascota con hash:', hash)
-        const { data, error } = await supabase
-          .from('pets')
-          .select(`
-            *,
-            profiles (
-              full_name,
-              phone,
-              phone_public
-            ),
-            lost_reports (
-              id,
-              status,
-              description,
-              created_at,
-              phone_public
-            ),
-            stray_reports (
-              reporter_id
-            ),
-            clinical_records (
-              id,
-              record_type,
-              title,
-              description,
-              veterinarian_name,
-              clinic_name,
-              record_date,
-              next_due_date,
-              created_at
-            )
-          `)
-          .eq('qr_code_hash', hash)
-          .maybeSingle()
-
-        if (error) {
-          console.error('❌ Error de Supabase:', error)
-          throw error
-        }
-
-        if (!data) {
-          console.warn('⚠️ No se encontró mascota con hash:', hash)
-          setError('Mascota no encontrada')
-          setLoading(false)
-          return
-        }
-
-        console.log('✅ Mascota encontrada:', data)
-        const report = data.lost_reports?.find((r: any) => r.status === 'activo')
-        setActiveReport(report || null)
-        setPet(data)
-      } catch (err: any) {
-        console.error('❌ Error inesperado:', err)
-        setError(err.message || 'Error al cargar los datos')
-      } finally {
+      if (!data) {
+        console.warn('⚠️ No se encontró mascota con hash:', hash)
+        setError('Mascota no encontrada. Verifica el código QR.')
         setLoading(false)
+        return
       }
-    }
 
+      console.log('✅ Mascota encontrada:', data)
+      const report = data.lost_reports?.find((r: any) => r.status === 'activo')
+      setActiveReport(report || null)
+      setPet(data)
+    } catch (err: any) {
+      console.error('❌ Error inesperado:', err)
+      if (retryCount < 2) {
+        setRetryCount(prev => prev + 1)
+        setTimeout(() => fetchPet(), 1000)
+        return
+      }
+      setError(`Error de conexión: ${err.message || 'Intenta nuevamente.'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchPet()
-  }, [hash])
+  }, [hash]) // Solo se ejecuta cuando el hash cambia
 
   if (loading) return <Loader />
-  if (error) return <div className="p-4 text-red-500 text-center">{error}</div>
+
+  // Mostrar error con botón de reintento
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-100/90 to-gray-200/90 p-4 flex flex-col items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full border-2 border-red-300 text-center">
+          <p className="text-red-500 font-bold text-lg">⚠️ {error}</p>
+          <button
+            onClick={() => {
+              setError('')
+              setLoading(true)
+              setRetryCount(0)
+              fetchPet()
+            }}
+            className="mt-4 bg-azul-turquesa text-white px-6 py-2 rounded-full hover:bg-azul-fuerte transition"
+          >
+            🔄 Reintentar
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   if (!pet) return <div className="p-4 text-center">Mascota no Encontrada</div>
 
   const isLost = !!activeReport
@@ -305,12 +343,12 @@ export const PublicPetProfile = () => {
               )}
             </div>
 
-            {/* QR con parámetro anti-caché */}
+            {/* QR con parámetro anti-caché fijo */}
             <div className="mt-6 text-center">
               <p className="text-xs text-gray-400 mb-2">Escaneá el QR para ver los datos</p>
               <div className="inline-block bg-white p-2 rounded-lg shadow">
                 <QRCodeSVG 
-                  value={`https://mascotapp-gamma.vercel.app/pet/${hash}?t=${Date.now()}`} 
+                  value={`https://mascotapp-gamma.vercel.app/pet/${hash}?v=1`} 
                   size={128} 
                 />
               </div>
